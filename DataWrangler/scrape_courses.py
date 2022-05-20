@@ -50,21 +50,39 @@ def generator():
         term_courses = []
         for course in tqdm(courses['hits']):
             # Get the course's information
-            data = get(term, course['subject']['subjectCode'], course['courseId'])
+            info = get(term, course['subject']['subjectCode'], course['courseId'])
             # Skip if course information is not available (usually because of server issues)
-            if data is None: continue
+            if info is None: continue
             # Alternatively, terminate the program if the course information is not available
             # if data is None: raise Exception('Course information not available at this time')
             # Filter the course information (reduces the size of the database)
-            term_courses.append(filter(data))
+            term_courses.append(filter(course, info))
         database[term] = term_courses
     return database
 
-def filter(data):
+def filter(course, info):
     '''
     TODO: Filters a course's information to only include the relevant information
     '''
-    return data
+    relevant = []
+    instructors = set()
+    relevant.extend([
+        {'generalEd': course['generalEd']},
+        {'ethnicStudies': course['ethnicStudies']},
+        {'breadths': course['breadths']},
+        {'levels': course['levels']}
+    ])
+    for section in info:
+        
+        instructor = section['sections'][0]['instructor']
+        if instructor is not None: 
+            instructor = instructor['personAttributes']['name']
+            instructors.add((instructor['first'], instructor['middle'], instructor['last'], instructor['legalFirst'], instructor['legalMiddle']))
+        relevant.append( section['packageEnrollmentStatus'] )
+    relevant.append({
+        'instructors': list(instructors),
+    })
+    return relevant
 
 def save():
     '''
@@ -79,3 +97,8 @@ def save():
 
 if __name__ == '__main__':
     save()
+    # generator()
+    # print(filter(course_list('1226')['hits'][123], get('1232', '266', '024795')))
+    # with open('test.json', 'w') as f:
+    #     json.dump(get('1232', '266', '024795'), f)
+        # json.dump(course_list('1226'), f)
