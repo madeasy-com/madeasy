@@ -57,7 +57,7 @@ def generator():
             # if data is None: raise Exception('Course information not available at this time')
             # Filter the course information (reduces the size of the database)
             term_courses.append(filter(course, info))
-            print(term_courses[-1])
+            # print(term_courses[-1])
             break
         database[term] = term_courses
     return database
@@ -84,7 +84,7 @@ def filter(course, info):
             # instructors.add((instructor['first'], instructor['middle'], instructor['last'], instructor['legalFirst'], instructor['legalMiddle']))
         relevant.extend([
             section['packageEnrollmentStatus'],
-            section['sections'][0]['subject'].pop('schoolCollegels')#.pop('undergraduateCatalogURI'))#.pop('graduateCatalogURI').pop('departmentURI').pop('uddsFundingSource').pop('schoolCollege').pop('footnotes')
+            section['sections'][0]['subject']#.pop('schoolCollegels')#.pop('undergraduateCatalogURI'))#.pop('graduateCatalogURI').pop('departmentURI').pop('uddsFundingSource').pop('schoolCollege').pop('footnotes')
             ])
     relevant.append({
         'instructors': list(instructors),
