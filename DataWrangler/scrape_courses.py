@@ -54,11 +54,11 @@ def generator():
             # Skip if course information is not available (usually because of server issues)
             if info is None: continue
             # Alternatively, terminate the program if the course information is not available
-            # if data is None: raise Exception('Course information not available at this time')
+            # if info is None: raise Exception('Course information not available at this time')
             # Filter the course information (reduces the size of the database)
             term_courses.append(filter(course, info))
             # print(term_courses[-1])
-            break
+            # break
         database[term] = term_courses
     return database
 
