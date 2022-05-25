@@ -57,8 +57,8 @@ def generator():
             # if info is None: raise Exception('Course information not available at this time')
             # Filter the course information (reduces the size of the database)
             term_courses.append(filter(course, info))
-            # print(term_courses[-1])
-            # break
+            print(term_courses[-1])
+            break
         database[term] = term_courses
     return database
 
@@ -68,23 +68,37 @@ def filter(course, info):
     '''
     relevant = []
     instructors = set()
+    course_code = course['courseDesignation']
+    if ' ' in course_code[-3:]: 
+        course_code = course_code[:-2] + course_code[-2:].replace(' ', ' 0')
+        course_code = course_code[:-3] + course_code[-3:].replace(' ', ' 0')
     relevant.extend([
+        {'course': course_code},
         {'generalEd': course['generalEd']},
         {'ethnicStudies': course['ethnicStudies']},
         {'breadths': course['breadths']},
-        {'levels': course['levels']}
+        {'levels': course['levels']},
     ])
     for section in info:
         
         instructor = section['sections'][0]['instructor']
         if instructor is not None: 
-            instructor = instructor['personAttributes']['emplid']
-            instructors.add(instructor)
-            # instructor = instructor['personAttributes']['name']
-            # instructors.add((instructor['first'], instructor['middle'], instructor['last'], instructor['legalFirst'], instructor['legalMiddle']))
+            # instructor = instructor['personAttributes']['emplid']
+            # instructors.add(instructor)
+            instructor = instructor['personAttributes']['name']
+            instructors.add((instructor['first'] + ' ' + instructor['last'], instructor['first'], instructor['middle'], instructor['last'], instructor['legalFirst'], instructor['legalMiddle']))
+        section['sections'][0]['subject'].pop('schoolCollegels', '')
+        section['sections'][0]['subject'].pop('undergraduateCatalogURI', '')
+        section['sections'][0]['subject'].pop('graduateCatalogURI', '')
+        section['sections'][0]['subject'].pop('departmentURI', '')
+        section['sections'][0]['subject'].pop('uddsFundingSource', '')
+        section['sections'][0]['subject'].pop('schoolCollege', '')
+        section['sections'][0]['subject'].pop('footnotes', '')
+        # section['sections'][0]['subject']
+        # section['sections'][0]['subject']
         relevant.extend([
             section['packageEnrollmentStatus'],
-            section['sections'][0]['subject']#.pop('schoolCollegels')#.pop('undergraduateCatalogURI'))#.pop('graduateCatalogURI').pop('departmentURI').pop('uddsFundingSource').pop('schoolCollege').pop('footnotes')
+            section['sections'][0]['subject']
             ])
     relevant.append({
         'instructors': list(instructors),
@@ -103,8 +117,8 @@ def save():
         print(Fore.LIGHTGREEN_EX+'Database saved!', Style.RESET_ALL)
 
 if __name__ == '__main__':
-    save()
-    # generator()
+    # save()
+    generator()
     # print(get('1232', '185', '021717.79'))
     # print(course_list('1224'))
     # print(course_list('1226')['hits'][123])
