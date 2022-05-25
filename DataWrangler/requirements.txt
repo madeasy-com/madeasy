@@ -1,3 +1,4 @@
 requests
 colorama
 tqdm
+browser_cookie3
