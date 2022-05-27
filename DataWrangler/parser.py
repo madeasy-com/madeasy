@@ -7,19 +7,21 @@ def load(filename, pages = '1'):
     print(f'{Fore.LIGHTCYAN_EX}Loaded {filename}...{Style.RESET_ALL}')
     return df
 
-df = load('test.pdf', '1,2,3')
+def generator(filename, pages = '1,2,3'):
+    return [ page.to_csv() for page in load(filename, pages) ]
 
-def generator():
-    for page in df: yield page.to_csv()
-
-def subject(page):
+def subject(page, pages):
     string = page.splitlines()[1].split(",")[1]
-    return string[4:].replace(' Grades', '')
-
+    if (department := string[4:].replace(' Grades', '')) != 'ary by College/School':
+        return department
+    else:
+        pages.remove(page)
+    
 # def save(): 
     # print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saving to CSV...')
     # for table in parse():
 
 if __name__ == '__main__':
-    for page in generator():
-        print(subject(page))
+    pages = generator('test.pdf', 'all')
+    for page in pages:
+        print(subject(page, pages))
