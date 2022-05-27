@@ -2,3 +2,6 @@ requests
 colorama
 tqdm
 browser_cookie3
+selenium
+webdriver_manager
+tika

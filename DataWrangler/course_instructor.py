@@ -30,22 +30,11 @@ def id_map(id):
     point_slope = 3*(id//10 - x[0]) + y[0]
     return str(point_slope+semester)
     
-def test_id_map():
-    '''
-    Tests id_map function
-    '''
-    assert id_map('1214') == '48'
-    assert id_map('1216') == '49'
-    assert id_map('1222') == '50'
-    assert id_map('1224') == '51'
-    assert id_map('1226') == '52'
-    assert id_map('1232') == '53'
-
 def instructors(course, term):
     '''
     Returns dictionary of instructor values mapped to their respective course sections
     Usage: instructors(course, term)['{course & section}']['Name'] -> 'Instructor Name'
-    Example: instructors('E C E 252', '1222')['E C E 252 001'] -> 'Joseph KRACHEY'
+    Example: instructors('E C E 252', '1222')['E C E 252 001']['Name'] -> 'Joseph KRACHEY'
     '''
     cookies = bc.load()
     
