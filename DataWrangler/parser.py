@@ -23,12 +23,10 @@ class Parser:
         return page
     
     def filter(self):
-        self.copy = self.data.copy()
-        self.data = []
-        for page in self.copy: 
-            page = self.rm_empty(page)
-            page = self.rm_pf(page)
-            self.data.append(page)
+        for i in range(len(self.data)):
+            self.data[i] = self.rm_empty(self.data[i])
+            self.data[i] = self.rm_pf(self.data[i])
+            self.data.append(self.data[i])
     
     def save(self, filename): 
         print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saving to CSV...')
