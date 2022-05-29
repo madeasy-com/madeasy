@@ -12,30 +12,40 @@ class Parser:
 
     def rm_empty(self, page):
         empty_col = [ col for col in page.columns if 'Unnamed:' in col ]
-        for col in empty_col: page = page.drop(col, axis=1)
+        for col in empty_col: page.drop(col, axis=1, inplace=True)
         return page
         # if 'Summary by College/School' == (string := page.splitlines()[1].split(",")[1]): self.data.remove(page)
         # return string[4:].replace(' Grades', '')
     
     def rm_pf(self, page):
         cols = {'S', 'U', 'CR', 'N', 'P', 'I', 'NW', 'NR', 'Other'}.intersection(set(page.columns))
-        for col in cols: page = page.drop(col, axis=1)
+        for col in cols: page.drop(col, axis=1, inplace=True)
+        return page
+    
+    def rm_nan_course(self, page):
+        GPA =  '***'
+        col = 'Ave'
+        if col in page.columns:
+            page.dropna(subset=[col],inplace=True)
+            page.query(f'Ave != "{GPA}"',inplace=True)
         return page
     
     def filter(self):
         for i in range(len(self.data)):
             self.data[i] = self.rm_empty(self.data[i])
             self.data[i] = self.rm_pf(self.data[i])
+            self.data[i] = self.rm_nan_course(self.data[i])
             self.data.append(self.data[i])
     
-    def save(self, filename): 
-        print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saving to CSV...')
+    def save(self, filename='test'): 
+        print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saving to PRA...')
         with open(f'{filename}.pra', 'w') as file:
-            for page in self.data: file.write(str(page).strip())
-        print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saved to CSV!')
+            for page in self.data: file.write(str(page).strip()+'\n')
+        print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saved to PRA!')
             
 
 if __name__ == '__main__':
-    pdf = Parser('test.pdf', 'all')
+    pdf = Parser('test.pdf', '1,2,3')
     pdf.filter()
-    for page in pdf: print((page))
+    pdf.save()
+    # for page in pdf: print((page))
