@@ -1,4 +1,4 @@
-import tabula, pandas as pd, csv, re
+import tabula, pandas as pd, csv, re, numbers
 from colorama import Fore, Style
 
 class Parser:
@@ -28,13 +28,15 @@ class Parser:
         page.dropna(how='all',axis=1,inplace=True)
     
     def rm_nan_course(self, page):
-        GPA =  '***'
         GPA_col = 'GPA'
         Section_col = 'Section'
+        page[GPA_col] = pd.to_numeric(page[GPA_col], errors='coerce')
         page.query(f'{GPA_col}.notna()', inplace=True) 
-        page.query(f'{GPA_col}.str.replace(".","").str.isdigit()', inplace=True)
-        page.query(f'{Section_col}.notna()', inplace=True) 
-        page.query(f'{Section_col}.str.replace(" ","").str.isdigit()', inplace=True)
+        page.query(f'{Section_col}.notna()', inplace=True)
+        # page[Section_col] = page[Section_col].apply(lambda x: re.match(), axis=1)
+        # page.query(f'{Section_col}.str.replace(" ","").str.isdigit()', extend=True)
+        try: page.query(f'{Section_col}.str.replace(" ","").str.isdigit()', inplace=True)
+        except: pass
         '''
         try: page.query(f'{GPA_col}.notna()', inplace=True) 
         except: pass
@@ -75,7 +77,7 @@ class Parser:
             
 
 if __name__ == '__main__':
-    pdf = Parser('test.pdf', '1,2,3,4')
+    pdf = Parser('test.pdf', 'all')
     pdf.filter()
     # print(pdf)
     pdf.save(pdf.term)
