@@ -4,6 +4,7 @@ from colorama import Fore, Style
 class Parser:
     def __init__(self, filename, pages = 'all'):
         print(f'{Fore.LIGHTCYAN_EX}Loading {filename}...{Style.RESET_ALL}')
+        self.term = tabula.read_pdf(filename, pages='1', area=[41.085, 99.99, 53.955, 123.75])[0].columns[0]
         self.data = tabula.read_pdf(filename, pages=pages, area=[96.525, 71.28, 524.205, 716.76])
         print(f'{Fore.LIGHTCYAN_EX}Loaded {filename}...{Style.RESET_ALL}')
 
@@ -38,14 +39,14 @@ class Parser:
             self.data.append(self.data[i])
     
     def save(self, filename='test'): 
-        print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saving to PRA...')
+        print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saving to {filename}.PRA...')
         with open(f'{filename}.pra', 'w') as file:
             for page in self.data: file.write(str(page).strip()+'\n')
-        print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saved to PRA!')
+        print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saved to {filename}.PRA!')
             
 
 if __name__ == '__main__':
     pdf = Parser('test.pdf', '1,2,3')
     pdf.filter()
-    pdf.save()
+    pdf.save(pdf.term)
     # for page in pdf: print((page))
