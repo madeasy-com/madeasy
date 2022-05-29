@@ -10,15 +10,25 @@ class Parser:
     def __iter__(self):
         for page in self.data: yield page
 
-    def subject(self, page):
-        # return self.data
-        
+    def rm_empty(self, page):
+        empty_col = [ col for col in page.columns if 'Unnamed:' in col ]
+        for col in empty_col: page = page.drop(col, axis=1)
+        return page
         # if 'Summary by College/School' == (string := page.splitlines()[1].split(",")[1]): self.data.remove(page)
         # return string[4:].replace(' Grades', '')
     
+    def rm_pf(self, page):
+        cols = {'S', 'U', 'CR', 'N', 'P', 'I', 'NW', 'NR', 'Other'}.intersection(set(page.columns))
+        for col in cols: page = page.drop(col, axis=1)
+        return page
+    
     def filter(self):
-        for page in self.data: 
-            self.subject(page)
+        self.copy = self.data.copy()
+        self.data = []
+        for page in self.copy: 
+            page = self.rm_empty(page)
+            page = self.rm_pf(page)
+            self.data.append(page)
     
     def save(self, filename): 
         print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saving to CSV...')
@@ -28,9 +38,6 @@ class Parser:
             
 
 if __name__ == '__main__':
-    pdf = Parser('test.pdf', '1,2,3')
-    # pdf.filter()
-    # pdf.save('test')
-    for page in pdf:
-        # print((page))
-        print(pdf.subject(page))
+    pdf = Parser('test.pdf', 'all')
+    pdf.filter()
+    for page in pdf: print((page))
