@@ -4,4 +4,6 @@ tqdm
 browser_cookie3
 selenium
 webdriver_manager
-tika
+tabula
+pandas
+numpy
