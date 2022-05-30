@@ -5,14 +5,30 @@ class Parser:
     def __init__(self, filename, pages = 'all'):
         print(f'{Fore.LIGHTCYAN_EX}Loading {filename}...{Style.RESET_ALL}')
         self.term = tabula.read_pdf(filename, pages='1', area=[41.085, 99.99, 53.955, 123.75])[0].columns[0]
-        self.data = tabula.read_pdf(filename, pages=pages, area=[119.295,200,525.195,487.08], pandas_options={'header': None})
-        for page, code in zip(self.data, tabula.read_pdf(filename, pages=pages, area=[107.415, 90.09, 121.275, 193.05])):
+        # # code = tabula.read_pdf(filename, pages, area=)
+        # self.data = []
+        # data1 = tabula.read_pdf(filename, pages=pages, area=[118.305, 262.68, 525.195, 481.47], pandas_options={'header': None})
+        # [ page.rename({0: 10}) for page in data1 ]
+        # data2 = tabula.read_pdf(filename, pages=pages, area=[119.3, 200, 524.2, 232], pandas_options={'header': None})
+        # for d1, d2 in zip(data1, data2):
+        #     self.data.append(d1.merge(d2, how='right'))
+        # print(data1)
+        # print(data2)
+        # self.data = tabula.read_pdf(filename, pages=pages, area=[[118.305, 266.64, 533.115, 482.46,],[119.295,200,525.195,232]], pandas_options={'header': None})
+        # # self.data = [ page for i, page in enumerate(self.data) if i % 2 == 1 ]
+        # len(self.data)
+        self.data = []
+        data = tabula.read_pdf(filename, pages=pages, area=[119.295,200,525.195,487.08], pandas_options={'header': None}, multiple_tables=True)
+        subject = []
+        for page, code in zip(data, tabula.read_pdf(filename, pages=pages, area=[107.415, 90.09, 121.275, 193.05], pandas_options={'header': None})):
             # page.attrs['Subject'] = re.sub('[[:alpha:]]', '', code.columns[0])
-            if len(code.columns) > 0:
-                page.attrs['Subject'] = code.columns[0]
-                # print(page.attrs['Subject'])
-            else:
-                self.data.remove(page)
+            page.attrs['Subject'] = code.iloc[0, 0]
+            self.data.append(page)
+            subject.append(page.attrs['Subject'])
+        # print(len(data), len(subject))
+        # print(data[220])
+        # print(data[220].attrs['Subject'])
+        # print(subject[220])
         print(f'{Fore.LIGHTCYAN_EX}Loaded {filename}...{Style.RESET_ALL}')
 
     def __str__(self):
@@ -30,8 +46,14 @@ class Parser:
     def rm_nan_course(self, page):
         GPA_col = 'GPA'
         Section_col = 'Section'
-        page[GPA_col] = pd.to_numeric(page[GPA_col], errors='coerce')
-        page.query(f'{GPA_col}.notna()', inplace=True) 
+        Student_col = 'Students'
+        self.rm_empty(page)
+        self.update_headers(page)
+        # page[GPA_col] = pd.to_numeric(page[GPA_col], errors='coerce')
+        # page.query(f'{GPA_col}.notna()', inplace=True) 
+        page[Student_col] = pd.to_numeric(page[Student_col], errors='coerce')
+        page.query(f'{Student_col}.notna()', inplace=True) 
+        page.query(f'{Student_col} > 5', inplace=True)
         page.query(f'{Section_col}.notna()', inplace=True)
         # page[Section_col] = page[Section_col].apply(lambda x: re.match(), axis=1)
         # page.query(f'{Section_col}.str.replace(" ","").str.isdigit()', extend=True)
@@ -59,26 +81,44 @@ class Parser:
         cols = dict(zip(page.columns, headers))
         page.rename(columns=cols, inplace=True)
     
+    def subject_check(self, page):
+        if not page.empty:
+            try:
+                page.attrs['Subject']
+            except:
+                page
+    
+    def clean(self):
+        self.data = [ page for page in self.data if not page.empty ]
+    
     def filter(self):
         for page in self.data:
             self.rm_empty(page)
             self.update_headers(page)
             # self.reset_headers(page)
             self.rm_nan_course(page)
+            self.rm_empty(page)
             # self.apply_subj(page)
             self.update_headers(page)
-        self.data = [ page for page in self.data if not page.empty ]
+            self.subject_check(page)
+        self.clean()
     
     def save(self, filename='test'): 
         print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saving to {filename}.PRA...')
         with open(f'{filename}.pra', 'w') as file:
-            for page in self.data: file.write(str(page).strip()+'\n')
+            for page in self.data: 
+                file.write(page.attrs['Subject'] + '\n')
+                file.write(str(page).strip()+'\n')
         print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saved to {filename}.PRA!')
             
 
 if __name__ == '__main__':
     pdf = Parser('test.pdf', 'all')
+    
     pdf.filter()
-    # print(pdf)
+    # print(pdf.data[220], pdf.data[220].attrs['Subject'])
+    # print(len(pdf.data))
     pdf.save(pdf.term)
-    for page in pdf: print((page))
+    # for page in pdf: 
+    #     print(page.attrs['Subject'])
+    #     print((page))
