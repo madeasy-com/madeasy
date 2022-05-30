@@ -1,5 +1,6 @@
-import tabula, pandas as pd, csv, re
+import tabula, pandas as pd, csv, re, numbers
 from colorama import Fore, Style
+import numpy as np
 
 
 class Parser:
@@ -8,24 +9,44 @@ class Parser:
         self.term = tabula.read_pdf(
             filename, pages="1", area=[41.085, 99.99, 53.955, 123.75]
         )[0].columns[0]
-        self.data = tabula.read_pdf(
+        # # code = tabula.read_pdf(filename, pages, area=)
+        # self.data = []
+        # data1 = tabula.read_pdf(filename, pages=pages, area=[118.305, 262.68, 525.195, 481.47], pandas_options={'header': None})
+        # [ page.rename({0: 10}) for page in data1 ]
+        # data2 = tabula.read_pdf(filename, pages=pages, area=[119.3, 200, 524.2, 232], pandas_options={'header': None})
+        # for d1, d2 in zip(data1, data2):
+        #     self.data.append(d1.merge(d2, how='right'))
+        # print(data1)
+        # print(data2)
+        # self.data = tabula.read_pdf(filename, pages=pages, area=[[118.305, 266.64, 533.115, 482.46,],[119.295,200,525.195,232]], pandas_options={'header': None})
+        # # self.data = [ page for i, page in enumerate(self.data) if i % 2 == 1 ]
+        # len(self.data)
+        self.data = []
+        data = tabula.read_pdf(
             filename,
             pages=pages,
             area=[119.295, 200, 525.195, 487.08],
             pandas_options={"header": None},
+            multiple_tables=True,
         )
+        subject = []
         for page, code in zip(
-            self.data,
+            data,
             tabula.read_pdf(
-                filename, pages=pages, area=[107.415, 90.09, 121.275, 193.05]
+                filename,
+                pages=pages,
+                area=[107.415, 90.09, 121.275, 193.05],
+                pandas_options={"header": None},
             ),
         ):
             # page.attrs['Subject'] = re.sub('[[:alpha:]]', '', code.columns[0])
-            if len(code.columns) > 0:
-                page.attrs["Subject"] = code.columns[0]
-                # print(page.attrs['Subject'])
-            else:
-                self.data.remove(page)
+            page.attrs["Subject"] = code.iloc[0, 0]
+            self.data.append(page)
+            subject.append(page.attrs["Subject"])
+        # print(len(data), len(subject))
+        # print(data[220])
+        # print(data[220].attrs['Subject'])
+        # print(subject[220])
         print(f"{Fore.LIGHTCYAN_EX}Loaded {filename}...{Style.RESET_ALL}")
 
     def __str__(self):
@@ -42,13 +63,23 @@ class Parser:
         page.dropna(how="all", axis=1, inplace=True)
 
     def rm_nan_course(self, page):
-        GPA = "***"
         GPA_col = "GPA"
         Section_col = "Section"
-        page.query(f"{GPA_col}.notna()", inplace=True)
-        page.query(f'{GPA_col}.str.replace(".","").str.isdigit()', inplace=True)
+        Student_col = "Students"
+        self.rm_empty(page)
+        self.update_headers(page)
+        # page[GPA_col] = pd.to_numeric(page[GPA_col], errors='coerce')
+        # page.query(f'{GPA_col}.notna()', inplace=True)
+        page[Student_col] = pd.to_numeric(page[Student_col], errors="coerce")
+        page.query(f"{Student_col}.notna()", inplace=True)
+        page.query(f"{Student_col} > 5", inplace=True)
         page.query(f"{Section_col}.notna()", inplace=True)
-        page.query(f'{Section_col}.str.replace(" ","").str.isdigit()', inplace=True)
+        # page[Section_col] = page[Section_col].apply(lambda x: re.match(), axis=1)
+        # page.query(f'{Section_col}.str.replace(" ","").str.isdigit()', extend=True)
+        try:
+            page.query(f'{Section_col}.str.replace(" ","").str.isdigit()', inplace=True)
+        except:
+            pass
         """
         try: page.query(f'{GPA_col}.notna()', inplace=True) 
         except: pass
@@ -71,20 +102,33 @@ class Parser:
         cols = dict(zip(page.columns, headers))
         page.rename(columns=cols, inplace=True)
 
+    def subject_check(self, page):
+        if not page.empty:
+            try:
+                page.attrs["Subject"]
+            except:
+                page
+
+    def clean(self):
+        self.data = [page for page in self.data if not page.empty]
+
     def filter(self):
         for page in self.data:
             self.rm_empty(page)
             self.update_headers(page)
             # self.reset_headers(page)
             self.rm_nan_course(page)
+            self.rm_empty(page)
             # self.apply_subj(page)
             self.update_headers(page)
-        self.data = [page for page in self.data if not page.empty]
+            self.subject_check(page)
+        self.clean()
 
     def save(self, filename="test"):
         print(f"{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saving to {filename}.PRA...")
         with open(f"{filename}.pra", "w") as file:
             for page in self.data:
+                file.write(page.attrs["Subject"] + "\n")
                 file.write(str(page).strip() + "\n")
         print(f"{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saved to {filename}.PRA!")
 
@@ -104,9 +148,35 @@ class Parser:
             sectionList.append(classList[i][-3:])
             classList[i] = classList[i][:3]
         for i in range(len(classList)):
+            if A[i] == ".":
+                A[i] = 0
+            if AB[i] == ".":
+                AB[i] = 0
+            if B[i] == ".":
+                B[i] = 0
+            if BC[i] == ".":
+                BC[i] = 0
+            if C[i] == ".":
+                C[i] = 0
+            if D[i] == ".":
+                D[i] = 0
+            if F[i] == ".":
+                F[i] = 0
+            SD = np.std(  # this is incorrect
+                [
+                    float(A[i]) / 100 * 4.0,
+                    float(AB[i]) / 100 * 3.5,
+                    float(B[i]) / 100 * 3.0,
+                    float(BC[i]) / 100 * 2.5,
+                    float(C[i]) / 100 * 2.0,
+                    float(D[i]) / 100 * 1.0,
+                    float(F[i]) / 100 * 0.0,
+                ]
+            )
             courseDict[page.attrs["Subject"] + " " + classList[i]] = {
                 sectionList[i]: {
-                    "GPA": gpa[i],
+                    "Mean": gpa[i],
+                    "SD": SD,
                     "A": A[i],
                     "AB": AB[i],
                     "B": B[i],
@@ -122,7 +192,7 @@ class Parser:
 if __name__ == "__main__":
     pdf = Parser(
         r"C:\Users\nithi\Downloads\madeasy\report-gradedistribution-2021-2022fall.pdf",
-        "all",
+        "1,2,3,4,5",
     )
     pdf.filter()
     # print(pdf)
