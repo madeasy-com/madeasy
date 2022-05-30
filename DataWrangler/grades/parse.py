@@ -4,8 +4,9 @@ from tqdm import tqdm
 
 class Parser:
     def __init__(self, filename, pages = 'all'):
-        print(f'{Fore.LIGHTCYAN_EX}Loading {filename}...{Style.RESET_ALL}')
+        print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Loading {filename}...{Style.RESET_ALL}')
         self.term = tabula.read_pdf(filename, pages='1', area=[41.085, 99.99, 53.955, 123.75])[0].columns[0]
+        print(f'{Fore.GREEN}[+]{Style.RESET_ALL} Loaded {filename}...{Style.RESET_ALL}')
         # # code = tabula.read_pdf(filename, pages, area=)
         # self.data = []
         # data1 = tabula.read_pdf(filename, pages=pages, area=[118.305, 262.68, 525.195, 481.47], pandas_options={'header': None})
@@ -32,7 +33,6 @@ class Parser:
         # print(data[220])
         # print(data[220].attrs['Subject'])
         # print(subject[220])
-        print(f'{Fore.LIGHTCYAN_EX}Loaded {filename}...{Style.RESET_ALL}')
 
     def __str__(self):
         return str(self.data)
@@ -50,26 +50,18 @@ class Parser:
         Student_col = 'Students'
         self.rm_empty(page)
         self.update_headers(page)
-        # page[GPA_col] = pd.to_numeric(page[GPA_col], errors='coerce')
-        # page.query(f'{GPA_col}.notna()', inplace=True) 
+        # Get only courses that meet the student threashold 
         page[Student_col] = pd.to_numeric(page[Student_col], errors='coerce')
         page.query(f'{Student_col}.notna()', inplace=True) 
         page.query(f'{Student_col} > 5', inplace=True)
+        # Get only courses with GPA
+        page[GPA_col] = pd.to_numeric(page[GPA_col], errors='coerce')
+        page.query(f'{GPA_col}.notna()', inplace=True)
+        # Get only courses with correct Section information
         page.query(f'{Section_col}.notna()', inplace=True)
-        # page[Section_col] = page[Section_col].apply(lambda x: re.match(), axis=1)
-        # page.query(f'{Section_col}.str.replace(" ","").str.isdigit()', extend=True)
-        try: page.query(f'{Section_col}.str.replace(" ","").str.isdigit()', inplace=True)
-        except: pass
-        '''
-        try: page.query(f'{GPA_col}.notna()', inplace=True) 
-        except: pass
-        try: page.query(f'{GPA_col}.str.replace(".","").str.isdigit()', inplace=True)
-        except: pass
-        try: page.query(f'{Section_col}.notna()', inplace=True) 
-        except: pass
-        try: page.query(f'{Section_col}.str.replace(" ","").str.isdigit()', inplace=True)
-        except: pass
-        '''
+        page[Section_col] = page[Section_col].astype(str)
+        page.query(f'{Section_col}.str.replace(" ","").str.isdigit()', inplace=True)
+        page.query(f'{Section_col}.str.len() == 7', inplace=True)
     
     def reset_headers(self, page):
         headers = list(range(len(page.columns)))
@@ -112,23 +104,23 @@ class Parser:
             os.makedirs(f'{os.path.dirname(os.path.abspath(__file__))}/{Folder}')
             print(f'{Folder} Path made!')
     
-    def save(self, filename='test', dir='extracted'): 
+    def save(self, filename='test', dir='extracted'):
+        self.make_dir(dir)
         print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saving to {filename}.PRA...')
-        with open(f'{filename}.pra', 'w') as file:
+        with open(f'{dir}/{filename}.pra', 'w') as file:
             for page in self.data: 
-                file.write(page.attrs['Subject'] + '\n')
-                file.write(str(page).strip()+'\n')
+                file.write('\n' + page.attrs['Subject'] + '\n')
+                file.write(str(page))#.strip()+'\n')
         print(f'{Fore.GREEN}[+]{Style.RESET_ALL} Saved to {filename}.PRA!')
     
             
 
 if __name__ == '__main__':
     pdf = Parser('test.pdf', 'all')
-    
     pdf.filter()
     # print(pdf.data[220], pdf.data[220].attrs['Subject'])
     # print(len(pdf.data))
-    pdf.save(pdf.term)
-    # for page in pdf: 
-    #     print(page.attrs['Subject'])
-    #     print((page))
+    # pdf.save(pdf.term)
+    for page in pdf: 
+        print(page.attrs['Subject'])
+        print((page))

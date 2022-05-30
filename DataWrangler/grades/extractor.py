@@ -1,6 +1,7 @@
 from colorama import Fore, Style
 import numpy as np, json
 from parse import Parser
+from course_instructor import instructors
 from tqdm import tqdm
 
 class Extractor(Parser):
@@ -46,26 +47,32 @@ class Extractor(Parser):
                     float(F[i]) / 100 * 0.0,
                 ]
             )
-            courseDict[page.attrs["Subject"] + " " + classList[i]] = {
+            course = (page.attrs["Subject"] + " " + classList[i])
+            courseDict[course] = {
                 sectionList[i]: {
-                    "Mean": float(gpa[i]),
-                    "SD": SD,
-                    "A": A[i],
-                    "AB": AB[i],
-                    "B": B[i],
-                    "BC": BC[i],
-                    "C": C[i],
-                    "D": D[i],
-                    "F": F[i],
+                    "distribution": {
+                        "Mean": float(gpa[i]),
+                        "SD": SD,
+                        "A": A[i],
+                        "AB": AB[i],
+                        "B": B[i],
+                        "BC": BC[i],
+                        "C": C[i],
+                        "D": D[i],
+                        "F": F[i],
+                    },
+                    "instructors": instructors(course=course, term=self.term)[sectionList[i]]
                 }
             }
         return courseDict
 
     def extract(self):
+        print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Extracting ...')
         self.file = []
         self.filter()
         for page in tqdm(self.data):
             self.file.append(self.generate(page))
+        print(f'{Fore.GREEN}[+]{Style.RESET_ALL} Extracted!')
 
     def save(self, filename, dir='extracted'):
         self.make_dir(dir)
@@ -78,7 +85,7 @@ class Extractor(Parser):
 if __name__ == "__main__":
     pdf = Extractor(
         r"test.pdf",
-        "1,2,3,4,5,6,7",
+        "1,2,3,4,5",
     )
     pdf.extract()
     pdf.save(pdf.term, './extracted')
