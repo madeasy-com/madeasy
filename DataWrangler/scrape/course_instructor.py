@@ -1,6 +1,7 @@
-import requests, json
+import requests, json, math
 from colorama import Fore, Style
 import browser_cookie3 as bc
+from tqdm import tqdm
 
 def search(course):
     '''
@@ -63,6 +64,63 @@ def instructors(course, term):
     
     return filter(response)
 
+def batch(term):
+    '''
+    Returns dictionary of instructor values mapped to their respective course sections
+    Usage: instructors(course, term)['{course & section}']['Name'] -> 'Instructor Name'
+    Example: instructors('E C E 252', '1222')['E C E 252 001']['Name'] -> 'Joseph KRACHEY'
+    '''
+    cookies = bc.load()
+    results, start, total, i  = 100, 0, 100, 0
+    
+    # Load total number of courses
+    filter = { "TermId" : id_map(term) }
+    filter = json.dumps(filter)
+    
+    params = {
+        'rf': 'JSON',
+        'filter': filter,
+        "maxresults": str(0),
+        "start": str(0),
+    }
+
+    response = requests.get('https://aefis.wisc.edu/index.cfm/page/AefisCourseSection.list', params=params, cookies=cookies).json()
+    total = math.ceil(int(response['recordsFiltered'])//results)
+    
+    data = {}
+    for i in tqdm(range(total)):
+        filter = { "TermId" : id_map(term) }
+        filter = json.dumps(filter)
+        
+        params = {
+            'rf': 'JSON',
+            'filter': filter,
+            "maxresults": str(results),
+            "start": str(start),
+        }
+
+        response = requests.get('https://aefis.wisc.edu/index.cfm/page/AefisCourseSection.list', params=params, cookies=cookies).json()
+        
+        def filter(response):
+            '''
+            Selects only the instructor names and their respective course sections
+            '''
+            data = {}
+            for section in response['DATA']:
+                instructor_li = section['InstructorList']
+                for instructor in instructor_li:
+                    instructor.pop('Id')
+                    instructor.pop('Email')
+                data[section['CourseName']] = instructor_li
+            return data
+        
+        data.update(filter(response))
+        
+        start += results
+        i += 1
+    
+    return data
+
 def save(data):
     '''
     Saves data to a json file
@@ -88,10 +146,11 @@ def temp(course, term):
     print(res)
 
 if __name__ == '__main__':
+    print(batch(1222))
     # temp('e c e 252',1222)
     # test_id_map()
     # print(search('e c e 252'))
     # print(id('e c e 252'))
-    print(instructors('e c e 252',1222))
+    # print(instructors('e c e 252',1222))
     # print(instructors('comp sci 300',1222))
     # save(instructors('e c e 252',1222))

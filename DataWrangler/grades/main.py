@@ -6,12 +6,13 @@ def main():
     '''
     Batch process all pdf files in the current directory
     '''
-    dir = '../data/extracted'
-    for file in listdir('../data/pdfs'):
+    source = '../data/pdfs/'
+    destination = '../data/extracted'
+    for file in listdir(source):
         if file.endswith('.pdf'):
-            pdf = Extractor(file, 'all')
+            pdf = Extractor(source+file, 'all')
             pdf.extract()
-            pdf.save(pdf.term, dir=dir)
+            pdf.save(pdf.term, dir=destination)
 
 if __name__ == '__main__':
     main()

@@ -61,17 +61,16 @@ class Extractor(Parser):
                         "D": D[i],
                         "F": F[i],
                     },
-                    "instructors": instructors(course=course, term=self.term)[sectionList[i]]
+                    "instructors": instructors(course=course, term=self.term)[sectionList[i]],
                 }
             }
         return courseDict
 
     def extract(self):
         print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Extracting ...')
-        self.file = []
         self.filter()
-        for page in tqdm(self.data):
-            self.file.append(self.generate(page))
+        self.file = {}
+        [ self.file.update(self.generate(page)) for page in tqdm(self.data) ]
         print(f'{Fore.GREEN}[+]{Style.RESET_ALL} Extracted!')
 
     def save(self, filename, dir='extracted'):

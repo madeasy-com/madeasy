@@ -57,8 +57,8 @@ def generator():
             # if info is None: raise Exception('Course information not available at this time')
             # Filter the course information (reduces the size of the database)
             term_courses.append(filter(course, info))
-            print(term_courses[-1])
-            break
+            # print(term_courses[-1])
+            # break
         database[term] = term_courses
     return database
 
@@ -86,7 +86,8 @@ def filter(course, info):
             # instructor = instructor['personAttributes']['emplid']
             # instructors.add(instructor)
             instructor = instructor['personAttributes']['name']
-            instructors.add((instructor['first'] + ' ' + instructor['last'], instructor['first'], instructor['middle'], instructor['last'], instructor['legalFirst'], instructor['legalMiddle']))
+            instructors.add(instructor['first'] + ' ' + instructor['last'])
+            # instructors.add((instructor['first'] + ' ' + instructor['last'], instructor['first'], instructor['middle'], instructor['last'], instructor['legalFirst'], instructor['legalMiddle']))
         section['sections'][0]['subject'].pop('schoolCollegels', '')
         section['sections'][0]['subject'].pop('undergraduateCatalogURI', '')
         section['sections'][0]['subject'].pop('graduateCatalogURI', '')
@@ -112,15 +113,15 @@ def save():
     print(Fore.LIGHTCYAN_EX+'Downloading database...')
     database = generator()
     print('Saving database...')
-    with open('../data/database.json', 'w') as f:
+    with open('../data/offerings.json', 'w') as f:
         json.dump(database, f)
         print(Fore.LIGHTGREEN_EX+'Database saved!', Style.RESET_ALL)
 
 if __name__ == '__main__':
-    # save()
-    generator()
-    # print(get('1232', '185', '021717.79'))
-    # print(course_list('1224'))
+    save()
+    # generator()
+    # print(get('1132', '266', '004289'))
+    # print(course_list('1222'))
     # print(course_list('1226')['hits'][123])
     # print(filter(course_list('1226')['hits'][123], get('1232', '266', '024795')))
     # with open('test.json', 'w') as f:
