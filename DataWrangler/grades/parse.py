@@ -1,5 +1,6 @@
 import tabula, pandas as pd, csv, re, numbers
 from colorama import Fore, Style
+from tqdm import tqdm
 
 class Parser:
     def __init__(self, filename, pages = 'all'):
@@ -20,11 +21,13 @@ class Parser:
         self.data = []
         data = tabula.read_pdf(filename, pages=pages, area=[119.295,200,525.195,487.08], pandas_options={'header': None}, multiple_tables=True)
         subject = []
+        print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Packing data...')
         for page, code in zip(data, tabula.read_pdf(filename, pages=pages, area=[107.415, 90.09, 121.275, 193.05], pandas_options={'header': None})):
             # page.attrs['Subject'] = re.sub('[[:alpha:]]', '', code.columns[0])
             page.attrs['Subject'] = code.iloc[0, 0]
             self.data.append(page)
             subject.append(page.attrs['Subject'])
+        print(f'{Fore.GREEN}[+]{Style.RESET_ALL} Packing finished!')
         # print(len(data), len(subject))
         # print(data[220])
         # print(data[220].attrs['Subject'])
@@ -38,9 +41,7 @@ class Parser:
         for page in self.data: yield page
 
     def rm_empty(self, page):
-        '''
-        Removes all empty columns
-        '''
+        # Removes all empty columns
         page.dropna(how='all',axis=1,inplace=True)
     
     def rm_nan_course(self, page):
@@ -103,13 +104,22 @@ class Parser:
             self.subject_check(page)
         self.clean()
     
-    def save(self, filename='test'): 
+    def make_dir(self, Folder):
+        import os
+        if os.path.exists(f'{os.path.dirname(os.path.abspath(__file__))}/{Folder}'):
+            pass
+        else:
+            os.makedirs(f'{os.path.dirname(os.path.abspath(__file__))}/{Folder}')
+            print(f'{Folder} Path made!')
+    
+    def save(self, filename='test', dir='extracted'): 
         print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saving to {filename}.PRA...')
         with open(f'{filename}.pra', 'w') as file:
             for page in self.data: 
                 file.write(page.attrs['Subject'] + '\n')
                 file.write(str(page).strip()+'\n')
-        print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saved to {filename}.PRA!')
+        print(f'{Fore.GREEN}[+]{Style.RESET_ALL} Saved to {filename}.PRA!')
+    
             
 
 if __name__ == '__main__':
