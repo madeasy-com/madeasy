@@ -121,7 +121,7 @@ if __name__ == '__main__':
     save()
     # generator()
     # print(get('1132', '266', '004289'))
-    # print(course_list('1222'))
+    # print(course_list('1224'))
     # print(course_list('1226')['hits'][123])
     # print(filter(course_list('1226')['hits'][123], get('1232', '266', '024795')))
     # with open('test.json', 'w') as f:
