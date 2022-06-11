@@ -189,17 +189,19 @@ class Parser:
                 str(pdf.term),
             )
             courseDict[page.attrs["Subject"] + " " + classList[i]] = {
-                sectionList[i]: {
-                    instructor: {
-                        "Mean": gpa[i],
-                        "SD": SD,
-                        "A": A[i],
-                        "AB": AB[i],
-                        "B": B[i],
-                        "BC": BC[i],
-                        "C": C[i],
-                        "D": D[i],
-                        "F": F[i],
+                pdf.term: {
+                    sectionList[i]: {
+                        instructor: {
+                            "Mean": gpa[i],
+                            "SD": SD,
+                            "A": A[i],
+                            "AB": AB[i],
+                            "B": B[i],
+                            "BC": BC[i],
+                            "C": C[i],
+                            "D": D[i],
+                            "F": F[i],
+                        }
                     }
                 }
             }
