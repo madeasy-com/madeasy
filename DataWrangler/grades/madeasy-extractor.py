@@ -3,7 +3,6 @@ from colorama import Fore, Style
 import numpy as np
 import course_instructor as ci
 
-
 class Parser:
     def __init__(self, dist_file, dir_file, pages="all"):
         print(f"{Fore.LIGHTCYAN_EX}Loading {dist_file}...{Style.RESET_ALL}")
@@ -139,6 +138,7 @@ class Parser:
 
     def courseStat(self, page):
         classList = page["Section"].tolist()
+        print(classList)
         sectionList = []
         courseDict = {}
         gpa = page["GPA"].tolist()
@@ -152,6 +152,7 @@ class Parser:
         for i in range(len(classList)):
             sectionList.append(classList[i][-3:])
             classList[i] = classList[i][:3]
+        print(classList)
         for i in range(len(classList)):
             if A[i] == ".":
                 A[i] = 0
@@ -178,29 +179,37 @@ class Parser:
                     float(F[i]) / 100 * 0.0,
                 ]
             )
+            # print(page.attrs["Subject"] + " " + classList[i])
             instructor = self.instructorspdf.get_instructor(
                 int(classList[i]),
                 str(sectionList[i]),
+                str(page.attrs["Subject"]),
                 str(page.attrs["SubjectNum"]),
                 str(pdf.term),
             )
+            # tempDict = {}
+            # if courseDict.get(page.attrs["Subject"] + " " + classList[i], None) and courseDict[page.attrs["Subject"] + " " + classList[i]].get(self.term, None) and courseDict[page.attrs["Subject"] + " " + classList[i]][self.term].get(instructor, None):
+            #     # Update dict
+            #     continue
             courseDict[page.attrs["Subject"] + " " + classList[i]] = {
                 self.term: {
                     sectionList[i]: {
                         instructor: {
-                            "Mean": gpa[i],
-                            "SD": SD,
-                            "A": A[i],
-                            "AB": AB[i],
-                            "B": B[i],
-                            "BC": BC[i],
-                            "C": C[i],
-                            "D": D[i],
-                            "F": F[i],
+                            "Mean": float(gpa[i]),
+                            "SD": float(SD),
+                            "A": float(A[i]),
+                            "AB": float(AB[i]),
+                            "B": float(B[i]),
+                            "BC": float(BC[i]),
+                            "C": float(C[i]),
+                            "D": float(D[i]),
+                            "F": float(F[i]),
                         }
                     }
                 }
             }
+            # for key in tempDict[page.attrs["Subject"] + " " + classList[i]][self.term]:
+            #     tempDict[page.attrs["Subject"] + " " + classList[i]][self.term][key]
         return courseDict
 
 
@@ -208,7 +217,7 @@ if __name__ == "__main__":
     pdf = Parser(
         "./DataWrangler/report-gradedistribution-2020-2021spring.pdf",
         './DataWrangler/1214Spring_Final_DIR.pdf',
-        "1,2,3,4,5",
+        "1,2,3",
     )
     pdf.filter()
     # print(pdf)
