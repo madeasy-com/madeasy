@@ -1,13 +1,16 @@
+from getpass import getpass
 import tabula, pandas as pd, csv, re, numbers
 from colorama import Fore, Style
 import numpy as np
 import course_instructor as ci
+import aefis as aefis
+
 
 class Parser:
-    def __init__(self, dist_file, dir_file, pages="all"):
-        print(f"{Fore.LIGHTCYAN_EX}Loading {dist_file}...{Style.RESET_ALL}")
+    def __init__(self, filename, pages="all"):
+        print(f"{Fore.LIGHTCYAN_EX}Loading {filename}...{Style.RESET_ALL}")
         self.term = tabula.read_pdf(
-            dist_file, pages="1", area=[41.085, 99.99, 53.955, 123.75]
+            filename, pages="1", area=[41.085, 99.99, 53.955, 123.75]
         )[0].columns[0]
         # # code = tabula.read_pdf(filename, pages, area=)
         # self.data = []
@@ -23,7 +26,7 @@ class Parser:
         # len(self.data)
         self.data = []
         data = tabula.read_pdf(
-            dist_file,
+            filename,
             pages=pages,
             area=[119.295, 200, 525.195, 487.08],
             pandas_options={"header": None},
@@ -34,7 +37,7 @@ class Parser:
         for page, code in zip(
             data,
             tabula.read_pdf(
-                dist_file,
+                filename,
                 pages=pages,
                 area=[105.435, 35.145, 121.275, 246.015],
                 pandas_options={"header": None},
@@ -50,8 +53,7 @@ class Parser:
         # print(data[220])
         # print(data[220].attrs['Subject'])
         # print(subject[220])
-        self.instructorspdf = ci.Instructor(dir_file, pages)
-        print(f"{Fore.LIGHTCYAN_EX}Loaded {dist_file}...{Style.RESET_ALL}")
+        print(f"{Fore.LIGHTCYAN_EX}Loaded {filename}...{Style.RESET_ALL}")
 
     def __str__(self):
         return str(self.data)
@@ -136,9 +138,8 @@ class Parser:
                 file.write(str(page).strip() + "\n")
         print(f"{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saved to {filename}.PRA!")
 
-    def courseStat(self, page):
+    def courseStat(pdf, page):
         classList = page["Section"].tolist()
-        print(classList)
         sectionList = []
         courseDict = {}
         gpa = page["GPA"].tolist()
@@ -149,10 +150,13 @@ class Parser:
         C = page["C"].tolist()
         D = page["D"].tolist()
         F = page["F"].tolist()
+        instructorspdf = ci.Instructor(
+            r"C:\Users\nithi\Downloads\madeasy\1214Spring_Final_DIR.pdf",
+            "1,2,3,4,5",
+        )
         for i in range(len(classList)):
             sectionList.append(classList[i][-3:])
             classList[i] = classList[i][:3]
-        print(classList)
         for i in range(len(classList)):
             if A[i] == ".":
                 A[i] = 0
@@ -179,44 +183,49 @@ class Parser:
                     float(F[i]) / 100 * 0.0,
                 ]
             )
-            # print(page.attrs["Subject"] + " " + classList[i])
-            instructor = self.instructorspdf.get_instructor(
-                int(classList[i]),
-                str(sectionList[i]),
-                str(page.attrs["Subject"]),
-                str(page.attrs["SubjectNum"]),
-                str(pdf.term),
-            )
-            # tempDict = {}
-            # if courseDict.get(page.attrs["Subject"] + " " + classList[i], None) and courseDict[page.attrs["Subject"] + " " + classList[i]].get(self.term, None) and courseDict[page.attrs["Subject"] + " " + classList[i]][self.term].get(instructor, None):
-            #     # Update dict
-            #     continue
-            courseDict[page.attrs["Subject"] + " " + classList[i]] = {
-                self.term: {
+            className = page.attrs["Subject"] + " " + classList[i]
+            try:
+                instructor = instructorspdf.get_instructor(
+                    int(classList[i]),
+                    str(sectionList[i]),
+                    str(page.attrs["SubjectNum"]),
+                    str(pdf.term),
+                )
+            except IndexError:
+                instructor = aefis.instructors(course=className, term=pdf.term)[
+                    sectionList[i]
+                ]
+            else:
+                instructor = "N/A"
+            # instructor = instructorspdf.get_instructor(
+            #     int(classList[i]),
+            #     str(sectionList[i]),
+            #     str(page.attrs["SubjectNum"]),
+            #     str(pdf.term),
+            # )
+            courseDict[className] = {
+                pdf.term: {
                     sectionList[i]: {
                         instructor: {
-                            "Mean": float(gpa[i]),
-                            "SD": float(SD),
-                            "A": float(A[i]),
-                            "AB": float(AB[i]),
-                            "B": float(B[i]),
-                            "BC": float(BC[i]),
-                            "C": float(C[i]),
-                            "D": float(D[i]),
-                            "F": float(F[i]),
+                            "Mean": gpa[i],
+                            "SD": SD,
+                            "A": A[i],
+                            "AB": AB[i],
+                            "B": B[i],
+                            "BC": BC[i],
+                            "C": C[i],
+                            "D": D[i],
+                            "F": F[i],
                         }
                     }
                 }
             }
-            # for key in tempDict[page.attrs["Subject"] + " " + classList[i]][self.term]:
-            #     tempDict[page.attrs["Subject"] + " " + classList[i]][self.term][key]
         return courseDict
 
 
 if __name__ == "__main__":
     pdf = Parser(
-        "./DataWrangler/report-gradedistribution-2020-2021spring.pdf",
-        './DataWrangler/1214Spring_Final_DIR.pdf',
+        r"C:\Users\nithi\Downloads\madeasy\report-gradedistribution-2020-2021spring.pdf",
         "1,2,3",
     )
     pdf.filter()
