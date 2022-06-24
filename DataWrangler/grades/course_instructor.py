@@ -2,6 +2,7 @@ import tabula, pandas as pd, csv, re, numbers
 from colorama import Fore, Style
 import aefis
 
+
 class Instructor:
     def __init__(self, filename, pages="all"):
         print(f"{Fore.LIGHTCYAN_EX}Loading {filename}...{Style.RESET_ALL}")
@@ -26,6 +27,7 @@ class Instructor:
         for page in collegeNum:
             self.collegeNum.append(page.columns[0][-4:-1])
         i = 0
+        pd.options.mode.chained_assignment = None
         for page in data:
             page = page.iloc[:, [1, 3, -1]]
             page.columns = ["Course", "Section", "Instructor"]
@@ -41,7 +43,9 @@ class Instructor:
         self.data = pd.concat(self.data)
         print(f"{Fore.LIGHTCYAN_EX}Loaded {filename}...{Style.RESET_ALL}")
 
-    def get_instructor(self, courseNum, sectionNum, collegeName, collegeNum, collegeTerm):
+    def get_instructor(
+        self, courseNum, sectionNum, collegeName, collegeNum, collegeTerm
+    ):
         try:
             return self.data.loc[
                 (self.data["Course"] == courseNum)
