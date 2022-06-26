@@ -4,6 +4,7 @@ from colorama import Fore, Style
 import numpy as np
 import course_instructor as ci
 import aefis as aefis
+import json
 
 
 class Parser:
@@ -149,15 +150,23 @@ class Parser:
         BC = page["BC"].tolist()
         C = page["C"].tolist()
         D = page["D"].tolist()
-        F = page["F"].tolist()
+        F = []
+        try:
+            F = page["F"].tolist()
+        except:
+            F.append(".")
         instructorspdf = ci.Instructor(
-            r"C:\Users\nithi\Downloads\madeasy\1214Spring_Final_DIR.pdf",
-            "1,2,3,4,5",
+            r"C:\Users\nithi\Downloads\madeasy\files\1214-dir.pdf",
         )
         for i in range(len(classList)):
-            sectionList.append(classList[i][-3:])
+            try:
+                sectionList.append(classList[i][-3:])
+            except:
+                sectionList.append(classList[-3:])
             classList[i] = classList[i][:3]
         for i in range(len(classList)):
+            if gpa[i] == ".":
+                gpa[i] = "NaN"
             if A[i] == ".":
                 A[i] = 0
             if AB[i] == ".":
@@ -170,8 +179,11 @@ class Parser:
                 C[i] = 0
             if D[i] == ".":
                 D[i] = 0
-            if F[i] == ".":
-                F[i] = 0
+            try:
+                if F[i] == ".":
+                    F[i] = 0
+            except:
+                F.append(0)
             SD = np.std(  # this is incorrect
                 [
                     float(A[i]) / 100 * 4.0,
@@ -191,12 +203,15 @@ class Parser:
                     str(page.attrs["SubjectNum"]),
                     str(pdf.term),
                 )
-            except IndexError:
-                instructor = aefis.instructors(course=className, term=pdf.term)[
-                    sectionList[i]
-                ]
-            else:
-                instructor = "N/A"
+            except:
+                try:
+                    instructor = aefis.instructors(course=className, term=pdf.term)[
+                        sectionList[i]
+                    ]
+                except:
+                    instructor = "N/A"
+            # else:
+            #     instructor = "N/A"
             # instructor = instructorspdf.get_instructor(
             #     int(classList[i]),
             #     str(sectionList[i]),
@@ -225,11 +240,16 @@ class Parser:
 
 if __name__ == "__main__":
     pdf = Parser(
-        r"C:\Users\nithi\Downloads\madeasy\report-gradedistribution-2020-2021spring.pdf",
-        "1,2,3",
+        r"C:\Users\nithi\Downloads\madeasy\files\1214-grade-report.pdf", pages="224-454"
     )
     pdf.filter()
     # print(pdf)
     # pdf.save(pdf.term)
+    # for page in pdf:
+    #     #     print(pdf.courseStat(page))
+    #     with open("sample.json", "a") as outfile:
+    #         json.dump(pdf.courseStat(page), outfile)
     for page in pdf:
-        print(pdf.courseStat(page))
+        #     print(pdf.courseStat(page))
+        with open("dwaynewadeisawoman.json", "a") as outfile:
+            json.dump(pdf.courseStat(page), outfile)
