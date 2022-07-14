@@ -71,15 +71,9 @@ def instructors(course, term):
 
 def instr(term: str, college: str, course: int, section: str, depth: int = 0):
     # Retrieve instructor names
-    if depth == 5:
-        str(instructors((college).strip()+' '+str(course).strip(), int(term))[str(section)]).replace('[','').replace(']','').replace("'",'')
-    if instruct := instructors((college).strip()+' '+str(course).strip(), int(term)):
-        return str(instruct[str(section)]).replace('[','').replace(']','').replace("'",'')
-    else:
-        time.sleep(5)
-        instr(term, college, course, section, depth+1)
+    # Known issue: semester 1204 and possible previous semesters have issues retrieving locating the correct course, and throws a section key error 
+    return str(instructors((college).strip()+' '+str(course).strip(), int(term))[str(section)]).replace('[','').replace(']','').replace("'",'')
         
-
 
 def batch(term):
     '''

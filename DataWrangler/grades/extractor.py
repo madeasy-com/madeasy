@@ -97,11 +97,11 @@ class Extractor(Parser):
 
 if __name__ == "__main__":
     dir = Instructor(
-        "../data/pdfs/1204-dir.pdf",
+        "../data/pdfs/1214-dir.pdf",
         "all",
     )
     pdf = Extractor(
-        "../data/pdfs/1204-grade-report.pdf",
+        "../data/pdfs/1214-grade-report.pdf",
         "all",
         dir
     )

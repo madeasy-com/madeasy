@@ -14,13 +14,13 @@ def main():
     '''
     files = listdir(source)
     terms = []
-    [ terms.append(term) for file in files if (term := file.split('-')[0]) not in terms ]
+    # check if both dir and grade report exist for each term and only add one term to the list
+    [ terms.append(term) for file in files if (term := file.split('-')[0]) not in terms and term+dir_ext in files and term+report_ext in files ]
     for term in terms:
-        if term+dir_ext in files and term+report_ext in files: # check if both dir and grade report exist
-            dir = Instructor(source+term+dir_ext)
-            pdf = Extractor(source+term+report_ext,dir=dir)
-            pdf.extract()
-            pdf.save(pdf.term, dir=destination)
+        dir = Instructor(source+term+dir_ext)
+        pdf = Extractor(source+term+report_ext,dir=dir)
+        pdf.extract()
+        pdf.save(pdf.term, dir=destination)
 
 if __name__ == '__main__':
     main()
