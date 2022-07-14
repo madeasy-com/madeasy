@@ -1,9 +1,11 @@
 import tabula, pandas as pd, csv, re, numbers
 from colorama import Fore, Style
 from tqdm import tqdm
+from course_instructor import Instructor
 
 class Parser:
-    def __init__(self, filename, pages = 'all'):
+    def __init__(self, filename, pages = 'all', dir:Instructor=None):
+        self.dir = dir
         print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Loading {filename}...{Style.RESET_ALL}')
         self.term = tabula.read_pdf(filename, pages='1', area=[41.085, 99.99, 53.955, 123.75])[0].columns[0]
         print(f'{Fore.GREEN}[+]{Style.RESET_ALL} Loaded {filename}...{Style.RESET_ALL}')
@@ -19,16 +21,29 @@ class Parser:
         # self.data = tabula.read_pdf(filename, pages=pages, area=[[118.305, 266.64, 533.115, 482.46,],[119.295,200,525.195,232]], pandas_options={'header': None})
         # # self.data = [ page for i, page in enumerate(self.data) if i % 2 == 1 ]
         # len(self.data)
+        
         self.data = []
         data = tabula.read_pdf(filename, pages=pages, area=[119.295,200,525.195,487.08], pandas_options={'header': None}, multiple_tables=True)
+        # subject = []
+        # print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Packing data...')
+        # for page, code in zip(data, tabula.read_pdf(filename, pages=pages, area=[107.415, 90.09, 121.275, 193.05], pandas_options={'header': None})):
+        #     # page.attrs['Subject'] = re.sub('[[:alpha:]]', '', code.columns[0])
+        #     page.attrs['Subject'] = code.iloc[0, 0]
+        #     self.data.append(page)
+        #     subject.append(page.attrs['Subject'])
+        # print(f'{Fore.GREEN}[+]{Style.RESET_ALL} Packing finished!')
+        
         subject = []
+        subjectNum = []
         print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Packing data...')
-        for page, code in zip(data, tabula.read_pdf(filename, pages=pages, area=[107.415, 90.09, 121.275, 193.05], pandas_options={'header': None})):
-            # page.attrs['Subject'] = re.sub('[[:alpha:]]', '', code.columns[0])
-            page.attrs['Subject'] = code.iloc[0, 0]
+        for page, code in zip(data, tabula.read_pdf(filename, pages=pages, area=[105.435, 35.145, 121.275, 246.015], pandas_options={"header": None})):
+            page.attrs["Subject"] = code.iloc[0, 1]
+            page.attrs["SubjectNum"] = code.iloc[0, 0]
             self.data.append(page)
-            subject.append(page.attrs['Subject'])
+            subject.append(page.attrs["Subject"])
+            subjectNum.append(page.attrs["SubjectNum"])
         print(f'{Fore.GREEN}[+]{Style.RESET_ALL} Packing finished!')
+        
         # print(len(data), len(subject))
         # print(data[220])
         # print(data[220].attrs['Subject'])
