@@ -3,6 +3,7 @@ from colorama import Fore, Style
 import browser_cookie3 as bc
 from math import ceil
 from tqdm import tqdm
+import time
 
 def search(course):
     '''
@@ -68,8 +69,16 @@ def instructors(course, term):
     
     return filter(response)
 
-def instr(term: str, college: str, course: int, section: str):
-    return str(instructors((college).strip()+' '+str(course).strip(), int(term))[str(section)]).replace('[','').replace(']','').replace("'",'')
+def instr(term: str, college: str, course: int, section: str, depth: int = 0):
+    # Retrieve instructor names
+    if depth == 5:
+        str(instructors((college).strip()+' '+str(course).strip(), int(term))[str(section)]).replace('[','').replace(']','').replace("'",'')
+    if instruct := instructors((college).strip()+' '+str(course).strip(), int(term)):
+        return str(instruct[str(section)]).replace('[','').replace(']','').replace("'",'')
+    else:
+        time.sleep(5)
+        instr(term, college, course, section, depth+1)
+        
 
 
 def batch(term):

@@ -52,7 +52,11 @@ class Instructor:
                 & (self.data["Term"] == collegeTerm)
             ]["Instructor"].values[0]
         except IndexError:
-            return aefis.instr(collegeTerm, collegeName, courseNum, sectionNum)
+            try:
+                return aefis.instr(collegeTerm, collegeName, courseNum, sectionNum)
+            except Exception as e:
+                print(f"Error occured with: {courseNum}, {sectionNum}, {collegeName}, {collegeNum}, {collegeTerm}")
+                raise e
         except Exception as e:
             print(f"Error occured with: {courseNum}, {sectionNum}, {collegeName}, {collegeNum}, {collegeTerm}")
             raise e

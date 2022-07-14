@@ -1,7 +1,7 @@
 from colorama import Fore, Style
 import numpy as np, json
 from parse import Parser
-from course_instructor import Instructor
+from instructor import Instructor
 from tqdm import tqdm
 
 class Extractor(Parser):
@@ -74,7 +74,7 @@ class Extractor(Parser):
                         sectionNum = str(sectionList[i]), 
                         collegeName = str(page.attrs["Subject"]),
                         collegeNum = str(page.attrs["SubjectNum"]), 
-                        collegeTerm = str(pdf.term),
+                        collegeTerm = str(self.term),
                     ),
                 }
             }
@@ -97,11 +97,11 @@ class Extractor(Parser):
 
 if __name__ == "__main__":
     dir = Instructor(
-        "../data/pdfs/1222-dir.pdf",
+        "../data/pdfs/1204-dir.pdf",
         "all",
     )
     pdf = Extractor(
-        "../data/pdfs/1222-grade-report.pdf",
+        "../data/pdfs/1204-grade-report.pdf",
         "all",
         dir
     )

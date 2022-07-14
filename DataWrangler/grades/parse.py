@@ -1,7 +1,7 @@
 import tabula, pandas as pd, csv, re, numbers
 from colorama import Fore, Style
 from tqdm import tqdm
-from course_instructor import Instructor
+from instructor import Instructor
 
 class Parser:
     def __init__(self, filename, pages = 'all', dir:Instructor=None):
