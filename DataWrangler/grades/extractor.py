@@ -8,7 +8,6 @@ class Extractor(Parser):
     
     def generate(self, page):
         classList = page["Section"].tolist()
-        sectionList = []
         courseDict = {}
         gpa = page["GPA"].tolist()
         A = page["A"].tolist()
@@ -22,12 +21,7 @@ class Extractor(Parser):
         except:
             F = ["."]
         for i in range(len(classList)):
-            try:
-                sectionList.append(classList[i][-3:])
-            except:
-                sectionList.append(classList[-3:])
-            classList[i] = classList[i][:3]
-        for i in range(len(classList)):
+            course_num, section = classList[i].split(" ")
             if gpa[i] == ".":
                 gpa[i] = "NaN"
             if A[i] == ".":
@@ -55,9 +49,10 @@ class Extractor(Parser):
                     float(F[i]) / 100 * 0.0,
                 ]
             )
-            course = (page.attrs["Subject"] + " " + classList[i])
+            course = (page.attrs["Subject"] + " " + course_num)
+            # print(course, section)
             courseDict[course] = {
-                sectionList[i]: {
+                section: {
                     "distribution": {
                         "A": A[i],
                         "AB": AB[i],
@@ -70,8 +65,8 @@ class Extractor(Parser):
                         "SD": SD,
                     },
                     "instructors": self.dir.get_instructor(
-                        courseNum = int(classList[i]), 
-                        sectionNum = str(sectionList[i]), 
+                        courseNum = int(course_num), 
+                        sectionNum = str(section), 
                         collegeName = str(page.attrs["Subject"]),
                         collegeNum = str(page.attrs["SubjectNum"]), 
                         collegeTerm = str(self.term),
