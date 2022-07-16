@@ -1,7 +1,7 @@
 from colorama import Fore, Style
 import numpy as np, json
 from parse import Parser
-from course_instructor import instructors
+from instructor import Instructor
 from tqdm import tqdm
 
 class Extractor(Parser):
@@ -17,11 +17,19 @@ class Extractor(Parser):
         BC = page["BC"].tolist()
         C = page["C"].tolist()
         D = page["D"].tolist()
-        F = page["F"].tolist()
+        try:
+            F = page["F"].tolist()
+        except:
+            F = ["."]
         for i in range(len(classList)):
-            sectionList.append(classList[i][-3:])
+            try:
+                sectionList.append(classList[i][-3:])
+            except:
+                sectionList.append(classList[-3:])
             classList[i] = classList[i][:3]
         for i in range(len(classList)):
+            if gpa[i] == ".":
+                gpa[i] = "NaN"
             if A[i] == ".":
                 A[i] = 0
             if AB[i] == ".":
@@ -51,8 +59,6 @@ class Extractor(Parser):
             courseDict[course] = {
                 sectionList[i]: {
                     "distribution": {
-                        "Mean": float(gpa[i]),
-                        "SD": SD,
                         "A": A[i],
                         "AB": AB[i],
                         "B": B[i],
@@ -60,8 +66,16 @@ class Extractor(Parser):
                         "C": C[i],
                         "D": D[i],
                         "F": F[i],
+                        "Mean": float(gpa[i]),
+                        "SD": SD,
                     },
-                    "instructors": instructors(course=course, term=self.term)[sectionList[i]],
+                    "instructors": self.dir.get_instructor(
+                        courseNum = int(classList[i]), 
+                        sectionNum = str(sectionList[i]), 
+                        collegeName = str(page.attrs["Subject"]),
+                        collegeNum = str(page.attrs["SubjectNum"]), 
+                        collegeTerm = str(self.term),
+                    ),
                 }
             }
         return courseDict
@@ -82,9 +96,14 @@ class Extractor(Parser):
 
 
 if __name__ == "__main__":
+    dir = Instructor(
+        "../data/pdfs/1214-dir.pdf",
+        "all",
+    )
     pdf = Extractor(
-        r"test.pdf",
-        "1,2,3,4,5",
+        "../data/pdfs/1214-grade-report.pdf",
+        "all",
+        dir
     )
     pdf.extract()
-    pdf.save(pdf.term, './extracted')
+    pdf.save(pdf.term, '../data/extracted')

@@ -1,5 +1,5 @@
 import json, re
-from course_instructor import instructors
+from instructor import Instructor
 
 def load(filename):
     with open(filename, 'r') as file:

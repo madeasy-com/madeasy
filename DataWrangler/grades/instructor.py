@@ -5,7 +5,7 @@ import aefis
 
 class Instructor:
     def __init__(self, filename, pages="all"):
-        print(f"{Fore.LIGHTCYAN_EX}Loading {filename}...{Style.RESET_ALL}")
+        print(f"{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Loading {filename}...")
         self.term = tabula.read_pdf(
             filename,
             area=[66.825, 70.785, 79.695, 101.475],
@@ -41,7 +41,7 @@ class Instructor:
             i += 1
             self.data.append(page)
         self.data = pd.concat(self.data)
-        print(f"{Fore.LIGHTCYAN_EX}Loaded {filename}...{Style.RESET_ALL}")
+        print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Loaded {filename}...")
 
     def get_instructor(
         self, courseNum, sectionNum, collegeName, collegeNum, collegeTerm
@@ -54,7 +54,14 @@ class Instructor:
                 & (self.data["Term"] == collegeTerm)
             ]["Instructor"].values[0]
         except IndexError:
-            return aefis.instr(collegeTerm, collegeName, courseNum, sectionNum)
+            try:
+                return aefis.instr(collegeTerm, collegeName, courseNum, sectionNum)
+            except Exception as e:
+                print(f"Error occured with: {courseNum}, {sectionNum}, {collegeName}, {collegeNum}, {collegeTerm}")
+                raise e
+        except Exception as e:
+            print(f"Error occured with: {courseNum}, {sectionNum}, {collegeName}, {collegeNum}, {collegeTerm}")
+            raise e
 
     def get_AllInstructors(self, courseNum, collegeNum, collegeTerm):
         listInstructors = self.data.loc[
