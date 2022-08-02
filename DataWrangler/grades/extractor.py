@@ -4,12 +4,13 @@ from parse import Parser
 from instructor import Instructor
 from tqdm import tqdm
 
+
 class Extractor(Parser):
-    
     def generate(self, page):
         classList = page["Section"].tolist()
         sectionList = []
         courseDict = {}
+        studNum = page["Students"].tolist()
         gpa = page["GPA"].tolist()
         A = page["A"].tolist()
         AB = page["AB"].tolist()
@@ -55,44 +56,44 @@ class Extractor(Parser):
                     float(F[i]) / 100 * 0.0,
                 ]
             )
-            course = (page.attrs["Subject"] + " " + classList[i])
+            course = page.attrs["Subject"] + " " + classList[i]
             courseDict[course] = {
                 sectionList[i]: {
                     "distribution": {
-                        "A": A[i],
-                        "AB": AB[i],
-                        "B": B[i],
-                        "BC": BC[i],
-                        "C": C[i],
-                        "D": D[i],
-                        "F": F[i],
+                        "A": A[i] // 100 * studNum[i],
+                        "AB": AB[i] // 100 * studNum[i],
+                        "B": B[i] // 100 * studNum[i],
+                        "BC": BC[i] // 100 * studNum[i],
+                        "C": C[i] // 100 * studNum[i],
+                        "D": D[i] // 100 * studNum[i],
+                        "F": F[i] // 100 * studNum[i],
                         "Mean": float(gpa[i]),
                         "SD": SD,
                     },
                     "instructors": self.dir.get_instructor(
-                        courseNum = int(classList[i]), 
-                        sectionNum = str(sectionList[i]), 
-                        collegeName = str(page.attrs["Subject"]),
-                        collegeNum = str(page.attrs["SubjectNum"]), 
-                        collegeTerm = str(self.term),
+                        courseNum=int(classList[i]),
+                        sectionNum=str(sectionList[i]),
+                        collegeName=str(page.attrs["Subject"]),
+                        collegeNum=str(page.attrs["SubjectNum"]),
+                        collegeTerm=str(self.term),
                     ),
                 }
             }
         return courseDict
 
     def extract(self):
-        print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Extracting ...')
+        print(f"{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Extracting ...")
         self.filter()
         self.file = {}
-        [ self.file.update(self.generate(page)) for page in tqdm(self.data) ]
-        print(f'{Fore.GREEN}[+]{Style.RESET_ALL} Extracted!')
+        [self.file.update(self.generate(page)) for page in tqdm(self.data)]
+        print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Extracted!")
 
-    def save(self, filename, dir='extracted'):
+    def save(self, filename, dir="extracted"):
         self.make_dir(dir)
-        print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saving to {filename}.JSON...')
-        with open(f'{dir}/{filename}.json', 'w') as file:
+        print(f"{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Saving to {filename}.JSON...")
+        with open(f"{dir}/{filename}.json", "w") as file:
             json.dump(self.file, file)
-        print(f'{Fore.GREEN}[+]{Style.RESET_ALL} Saved to {filename}.JSON!')
+        print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Saved to {filename}.JSON!")
 
 
 if __name__ == "__main__":
@@ -100,10 +101,6 @@ if __name__ == "__main__":
         "../data/pdfs/1214-dir.pdf",
         "all",
     )
-    pdf = Extractor(
-        "../data/pdfs/1214-grade-report.pdf",
-        "all",
-        dir
-    )
+    pdf = Extractor("../data/pdfs/1214-grade-report.pdf", "all", dir)
     pdf.extract()
-    pdf.save(pdf.term, '../data/extracted')
+    pdf.save(pdf.term, "../data/extracted")
