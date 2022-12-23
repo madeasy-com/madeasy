@@ -35,12 +35,13 @@ class Instructor:
             # page = page[page.LEC != "LAB"]
             # page = page.drop("LEC", axis=1)
             page["Section"] = page["Section"].astype(str).str.zfill(3)
-            page["Instructor"] = page["Instructor"].str[4:]
+            page["Instructor"] = page["Instructor"].str[4:].str.replace(".", "").str.replace("  ", " ").str.strip()
             page["CollegeNum"] = self.collegeNum[i]
             page["Term"] = self.term
             i += 1
             self.data.append(page)
         self.data = pd.concat(self.data)
+        # self.data.dropna(inplace=True)
         print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Loaded {filename}...")
 
     def get_instructor(self, courseNum, sectionNum, collegeName, collegeNum, collegeTerm):
