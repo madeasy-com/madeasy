@@ -36,6 +36,7 @@ class Instructor:
             # page = page.drop("LEC", axis=1)
             page["Section"] = page["Section"].astype(str).str.zfill(3)
             page["Instructor"] = page["Instructor"].str[4:].str.replace(".", "").str.replace("  ", " ").str.strip()
+            if page["Instructor"].str == "": pass
             page["CollegeNum"] = self.collegeNum[i]
             page["Term"] = self.term
             i += 1
@@ -46,12 +47,14 @@ class Instructor:
 
     def get_instructor(self, courseNum, sectionNum, collegeName, collegeNum, collegeTerm):
         try:
-            return self.data.loc[
+            res = self.data.loc[
                 (self.data["Course"] == courseNum)
                 & (self.data["Section"] == sectionNum)
                 & (self.data["CollegeNum"] == collegeNum)
                 & (self.data["Term"] == collegeTerm)
             ]["Instructor"].values[0]
+            if res != "": return res
+            raise(IndexError)
         except IndexError:
             try:
                 return aefis.instr(collegeTerm, collegeName, courseNum, sectionNum)
