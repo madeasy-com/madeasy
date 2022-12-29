@@ -12,20 +12,12 @@ class Instructor:
             pages=1,
         )[0].columns[0]
         self.data = []
-        if int(self.term) < 1224:
-            data = tabula.read_pdf(
-                filename,
-                area=[127.215, 4.455, 561.825, 791.505],
-                pandas_options={"header": None},
-                pages=pages,
-            )
-        else:
-            data = tabula.read_pdf(
-                filename,
-                area=[115.295, 200, 540.195, 487.08],
-                pandas_options={"header": None},
-                pages=pages,
-            )
+        data = tabula.read_pdf(
+            filename,
+            area=[127.215, 4.455, 561.825, 791.505],
+            pandas_options={"header": None},
+            pages=pages,
+        )
         self.collegeNum = []
         collegeNum = tabula.read_pdf(
             filename,
@@ -43,15 +35,8 @@ class Instructor:
             # page = page[page.LEC != "LAB"]
             # page = page.drop("LEC", axis=1)
             page["Section"] = page["Section"].astype(str).str.zfill(3)
-            page["Instructor"] = (
-                page["Instructor"]
-                .str[4:]
-                .str.replace(".", "")
-                .str.replace("  ", " ")
-                .str.strip()
-            )
-            if page["Instructor"].str == "":
-                pass
+            page["Instructor"] = page["Instructor"].str[4:].str.replace(".", "", regex=False).str.replace("  ", " ", regex=False).str.strip()
+            if page["Instructor"].str == "": pass
             page["CollegeNum"] = self.collegeNum[i]
             page["Term"] = self.term
             i += 1
@@ -60,9 +45,7 @@ class Instructor:
         # self.data.dropna(inplace=True)
         print(f"{Fore.GREEN}[+]{Style.RESET_ALL} Loaded {filename}...")
 
-    def get_instructor(
-        self, courseNum, sectionNum, collegeName, collegeNum, collegeTerm
-    ):
+    def get_instructor(self, courseNum, sectionNum, collegeName, collegeNum, collegeTerm):
         try:
             res = self.data.loc[
                 (self.data["Course"] == courseNum)
@@ -70,23 +53,16 @@ class Instructor:
                 & (self.data["CollegeNum"] == collegeNum)
                 & (self.data["Term"] == collegeTerm)
             ]["Instructor"].values[0]
-            if res != "":
-                return res
-            raise (IndexError)
+            if res != "": return res
+            raise(IndexError)
         except IndexError:
             try:
                 return aefis.instr(collegeTerm, collegeName, courseNum, sectionNum)
             except Exception as e:
-                print(
-                    f"\nError occured with: {courseNum}, {sectionNum}, {collegeName}, {collegeNum}, {collegeTerm}"
-                )
-                print(
-                    f"{Fore.LIGHTRED_EX}[-]{Style.RESET_ALL} AeFIS Error: {e}, Possible reason: Cookies file needs to be updated or No instructor found in the database"
-                )
+                print(f"\nError occured with: {courseNum}, {sectionNum}, {collegeName}, {collegeNum}, {collegeTerm}")
+                print(f'{Fore.LIGHTRED_EX}[-]{Style.RESET_ALL} AeFIS Error: {e}, Possible reason: Cookies file needs to be updated or No instructor found in the database')
         except Exception as e:
-            print(
-                f"Error occured with: {courseNum}, {sectionNum}, {collegeName}, {collegeNum}, {collegeTerm}"
-            )
+            print(f"Error occured with: {courseNum}, {sectionNum}, {collegeName}, {collegeNum}, {collegeTerm}")
             raise e
 
     def get_AllInstructors(self, courseNum, collegeNum, collegeTerm):
