@@ -35,7 +35,7 @@ class Instructor:
             # page = page[page.LEC != "LAB"]
             # page = page.drop("LEC", axis=1)
             page["Section"] = page["Section"].astype(str).str.zfill(3)
-            page["Instructor"] = page["Instructor"].str[4:].str.replace(".", "").str.replace("  ", " ").str.strip()
+            page["Instructor"] = page["Instructor"].str[4:].str.replace(".", "", regex=False).str.replace("  ", " ", regex=False).str.strip()
             if page["Instructor"].str == "": pass
             page["CollegeNum"] = self.collegeNum[i]
             page["Term"] = self.term

@@ -3,51 +3,33 @@ from colorama import Fore, Style
 from tqdm import tqdm
 from instructor import Instructor
 
+'''
+Notes:
+
+Area is defined as [y1, x1, y2, x2]
+'''
+
 class Parser:
     def __init__(self, filename, pages = 'all', dir:Instructor=None):
         self.dir = dir
         print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Loading {filename}...{Style.RESET_ALL}')
         self.term = tabula.read_pdf(filename, pages='1', area=[41.085, 99.99, 53.955, 123.75])[0].columns[0]
+        area = [[119.295,200,525.195,487.08], [105.435, 35.145, 121.275, 246.015]]
+        if int(self.term) >= 1224: area[0][0], area[0][2] = area[0][0]+4, area[0][2]+25
+        table = tabula.read_pdf(filename, pages=pages, area=area, pandas_options={'header': None})
         print(f'{Fore.GREEN}[+]{Style.RESET_ALL} Loaded {filename}...{Style.RESET_ALL}')
-        # # code = tabula.read_pdf(filename, pages, area=)
-        # self.data = []
-        # data1 = tabula.read_pdf(filename, pages=pages, area=[118.305, 262.68, 525.195, 481.47], pandas_options={'header': None})
-        # [ page.rename({0: 10}) for page in data1 ]
-        # data2 = tabula.read_pdf(filename, pages=pages, area=[119.3, 200, 524.2, 232], pandas_options={'header': None})
-        # for d1, d2 in zip(data1, data2):
-        #     self.data.append(d1.merge(d2, how='right'))
-        # print(data1)
-        # print(data2)
-        # self.data = tabula.read_pdf(filename, pages=pages, area=[[118.305, 266.64, 533.115, 482.46,],[119.295,200,525.195,232]], pandas_options={'header': None})
-        # # self.data = [ page for i, page in enumerate(self.data) if i % 2 == 1 ]
-        # len(self.data)
         
-        self.data = []
-        data = tabula.read_pdf(filename, pages=pages, area=[119.295,200,525.195,487.08], pandas_options={'header': None}, multiple_tables=True)
-        # subject = []
-        # print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Packing data...')
-        # for page, code in zip(data, tabula.read_pdf(filename, pages=pages, area=[107.415, 90.09, 121.275, 193.05], pandas_options={'header': None})):
-        #     # page.attrs['Subject'] = re.sub('[[:alpha:]]', '', code.columns[0])
-        #     page.attrs['Subject'] = code.iloc[0, 0]
-        #     self.data.append(page)
-        #     subject.append(page.attrs['Subject'])
-        # print(f'{Fore.GREEN}[+]{Style.RESET_ALL} Packing finished!')
-        
-        subject = []
-        subjectNum = []
         print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Packing data...')
-        for page, code in zip(data, tabula.read_pdf(filename, pages=pages, area=[105.435, 35.145, 121.275, 246.015], pandas_options={"header": None})):
-            page.attrs["Subject"] = code.iloc[0, 1]
+        self.data = []
+        n = len(table)
+        for i in range(n-1):
+            page, code = table[i], table[i+1]
+            if len(page) == 1 or len(code) != 1: continue
             page.attrs["SubjectNum"] = code.iloc[0, 0]
+            page.attrs["Subject"] = code.iloc[0, 1]
             self.data.append(page)
-            subject.append(page.attrs["Subject"])
-            subjectNum.append(page.attrs["SubjectNum"])
         print(f'{Fore.GREEN}[+]{Style.RESET_ALL} Packing finished!')
         
-        # print(len(data), len(subject))
-        # print(data[220])
-        # print(data[220].attrs['Subject'])
-        # print(subject[220])
 
     def __str__(self):
         return str(self.data)
@@ -131,11 +113,11 @@ class Parser:
             
 
 if __name__ == '__main__':
-    pdf = Parser('test.pdf', 'all')
-    pdf.filter()
-    # print(pdf.data[220], pdf.data[220].attrs['Subject'])
-    # print(len(pdf.data))
-    # pdf.save(pdf.term)
-    for page in pdf: 
-        print(page.attrs['Subject'])
-        print((page))
+    p = Parser('../data/pdfs/1224-grade-report.pdf', '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20')
+    # p.filter()
+    # # print(p.data[220], p.data[220].attrs['Subject'])
+    # # print(len(p.data))
+    # # p.save(p.term)
+    # for page in p: 
+    #     print(page.attrs['Subject'])
+    #     print((page))
