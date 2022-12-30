@@ -39,7 +39,7 @@ class Parser:
             data = tabula.read_pdf(
                 filename,
                 pages=pages,
-                area=[119.295, 200, 525.195, 487.08],
+                area=[115.295, 200, 540.195, 487.08],
                 pandas_options={"header": None},
                 multiple_tables=True,
             )
