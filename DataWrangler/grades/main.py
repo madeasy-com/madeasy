@@ -29,3 +29,4 @@ def single(term):
 if __name__ == '__main__':
     main()
     # single('1224')
+    # single('1222')

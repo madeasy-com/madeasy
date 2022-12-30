@@ -35,8 +35,12 @@ class Instructor:
             # page = page[page.LEC != "LAB"]
             # page = page.drop("LEC", axis=1)
             page["Section"] = page["Section"].astype(str).str.zfill(3)
+            # page["Section"] = page["Section"].astype(int)
+            # print(page["Section"])
             page["Instructor"] = page["Instructor"].str[4:].str.replace(".", "", regex=False).str.replace("  ", " ", regex=False).str.strip()
-            if page["Instructor"].str == "": pass
+            if page["Instructor"].str == "": 
+                print(f"{Fore.LIGHTRED_EX}[-]{Style.RESET_ALL} Instructor not found for {page['Course'].values[0]} {page['Section'].values[0]}")
+                pass
             page["CollegeNum"] = self.collegeNum[i]
             page["Term"] = self.term
             i += 1
