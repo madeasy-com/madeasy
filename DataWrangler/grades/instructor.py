@@ -12,20 +12,12 @@ class Instructor:
             pages=1,
         )[0].columns[0]
         self.data = []
-        if int(self.term) < 1224:
-            data = tabula.read_pdf(
-                filename,
-                area=[127.215, 4.455, 561.825, 791.505],
-                pandas_options={"header": None},
-                pages=pages,
-            )
-        else:
-            data = tabula.read_pdf(
-                filename,
-                area=[115.295, 200, 540.195, 487.08],
-                pandas_options={"header": None},
-                pages=pages,
-            )
+        data = tabula.read_pdf(
+            filename,
+            area=[127.215, 4.455, 561.825, 791.505],
+            pandas_options={"header": None},
+            pages=pages,
+        )
         self.collegeNum = []
         collegeNum = tabula.read_pdf(
             filename,

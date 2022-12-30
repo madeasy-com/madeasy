@@ -26,15 +26,23 @@ class Parser:
         # self.data = tabula.read_pdf(filename, pages=pages, area=[[118.305, 266.64, 533.115, 482.46,],[119.295,200,525.195,232]], pandas_options={'header': None})
         # # self.data = [ page for i, page in enumerate(self.data) if i % 2 == 1 ]
         # len(self.data)
-
         self.data = []
-        data = tabula.read_pdf(
-            filename,
-            pages=pages,
-            area=[119.295, 200, 525.195, 487.08],
-            pandas_options={"header": None},
-            multiple_tables=True,
-        )
+        if int(self.term) < 1224:
+            data = tabula.read_pdf(
+                filename,
+                pages=pages,
+                area=[119.295, 200, 525.195, 487.08],
+                pandas_options={"header": None},
+                multiple_tables=True,
+            )
+        else:
+            data = tabula.read_pdf(
+                filename,
+                pages=pages,
+                area=[119.295, 200, 525.195, 487.08],
+                pandas_options={"header": None},
+                multiple_tables=True,
+            )
         # subject = []
         # print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Packing data...')
         # for page, code in zip(data, tabula.read_pdf(filename, pages=pages, area=[107.415, 90.09, 121.275, 193.05], pandas_options={'header': None})):
