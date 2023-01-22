@@ -8,7 +8,7 @@ class Parser:
         
         print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Loading {filename}...{Style.RESET_ALL}')
         pdf = pdfplumber.open(filename)
-        TERM, CODE = (70, 44, 125, 55), (75, 110, 150, 120)
+        TERM, CODE = (70, 44, 125, 55), (70, 105, 200, 125)
         self.term = pdf.pages[0].within_bbox(TERM).extract_text()[-4:]
         print(f'{Fore.GREEN}[+]{Style.RESET_ALL} Loaded {filename}...{Style.RESET_ALL}')
         
@@ -26,12 +26,20 @@ class Parser:
             data = []
             for page in tqdm(pdf.pages):
                 DEPT = page.within_bbox(CODE).extract_text()
+                '''
+                Skip all redacted grade classes '***'
+                Squish all multi spaces into single space
+                Select strings that exactly match the regex -> '\d{3} \d{3} ' (e.g. '123 001 ') which is basically searching for course and section
+                '''
                 res = list(filter(lambda s: s, map(m, filter(lambda s: False if '***' in s else True, page.extract_text().split('\n')))))
                 data.extend(res)
             
             self.data = pd.DataFrame(data, columns=['Code', 'Dept', 'Course', 'Section', 'Students', 'GPA', 'A', 'AB', 'B', 'BC', 'C', 'D', 'F'])
             self.data.replace('.', '0.0', inplace=True)
             self.data.replace('', '0.0', inplace=True)
+            selected = ['Code', 'Students', 'GPA', 'A', 'AB', 'B', 'BC', 'C', 'D', 'F']
+            for col in selected:
+                self.data[col] = pd.to_numeric(self.data[col])
         print(f'{Fore.GREEN}[+]{Style.RESET_ALL} Packing finished!')
         
 
