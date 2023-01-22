@@ -19,13 +19,10 @@ class Extractor(Parser):
         BC = page["BC"].tolist()
         C = page["C"].tolist()
         D = page["D"].tolist()
-        try:
-            F = page["F"].tolist()
-        except:
-            F = ["."]
-        for i in range(len(courseNumList)):
-            course_num, section = courseNumList[i], sectionList[i]
-            if gpa[i] == ".": gpa[i] = "NaN"
+        F = page["F"].tolist()
+        for i in range(len(classList)):
+            course_num, section = classList[i].split(" ")
+            if not (gpa[i].isnumeric()): gpa[i] = 0
             if A[i] == ".": A[i] = 0
             if AB[i] == ".": AB[i] = 0
             if B[i] == ".": B[i] = 0
@@ -33,7 +30,11 @@ class Extractor(Parser):
             if C[i] == ".": C[i] = 0
             if D[i] == ".": D[i] = 0
             if F[i] == ".": F[i] = 0
-            if gpa[i] != "NaN": mu = float(gpa[i])
+            mu = float(gpa[i])
+            # try:
+            #     if gpa[i] != ".": mu = float(gpa[i])
+            # except:
+            #     print(gpa[i])
             (A[i], AB[i], B[i], BC[i], C[i], D[i], F[i], gpa[i]) = tuple(map(float, (A[i], AB[i], B[i], BC[i], C[i], D[i], F[i], gpa[i])))
             def vari():
                 deviation = [

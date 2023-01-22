@@ -1,7 +1,8 @@
-import tabula, pandas as pd, csv, re, numbers
+import pdfplumber, pandas as pd, csv, re, numbers
 from colorama import Fore, Style
 from tqdm import tqdm
 from instructor import Instructor
+import numpy as np
 
 '''
 Notes:
@@ -13,23 +14,38 @@ class Parser:
     def __init__(self, filename, pages = 'all', dir:Instructor=None):
         self.dir = dir
         print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Loading {filename}...{Style.RESET_ALL}')
-        self.term = tabula.read_pdf(filename, pages='1', area=[41.085, 99.99, 53.955, 123.75])[0].columns[0]
-        # Data area, Subject area
-        area = [[119.295,200,525.195,487.08], [105.435, 35.145, 121.275, 246.015]]
-        if int(self.term) >= 1224: area[0][0], area[0][2] = area[0][0]-12, area[0][2]+25
-        table = tabula.read_pdf(filename, pages=pages, area=area, pandas_options={'header': None})
-        self.table = table
+        pdf = pdfplumber.open(filename)
+        TERM, CODE = (70, 44, 125, 55), (75, 110, 150, 120)
+        self.term = pdf.pages[0].within_bbox(TERM).extract_text()[-4:]
         print(f'{Fore.GREEN}[+]{Style.RESET_ALL} Loaded {filename}...{Style.RESET_ALL}')
         
         print(f'{Fore.LIGHTBLUE_EX}[+]{Style.RESET_ALL} Packing data...')
+        def clean(row):
+            code = row[1]
+            # Remove non reported grades and blank rows
+            whitelist = ['***' in row, ''.join(row) == '']
+            # Check code is in correct format
+            blacklist = [len(code) >= 7 and code[-7:-4].isnumeric() and code[-3:].isnumeric() and code[-4] == ' ']
+            if True in whitelist: return False
+            if False in blacklist: return False
+            return True
+        
+        def mapping(row):
+            temp = []
+            for s in row[2:11]:
+                temp += s.split(' ')
+            return [row[1], *temp][:10]
+        
         self.data = []
-        n = len(table)
-        for i in range(n-1):
-            page, code = table[i], table[i+1]
-            if len(page) == 1 or len(code) != 1: continue
-            page.attrs["SubjectNum"] = code.iloc[0, 0]
-            page.attrs["Subject"] = code.iloc[0, 1]
-            self.data.append(page)
+        for page in tqdm(pdf.pages[:20]):
+            code = page.within_bbox(CODE).extract_text()
+            res = page.extract_table(table_settings={"vertical_strategy": "text","horizontal_strategy": "text","keep_blank_chars": True,"text_x_tolerance": 2})
+            res = map(mapping, filter(clean, res))
+            temp = pd.DataFrame(res, columns=['Section', 'Students', 'GPA', 'A', 'AB', 'B', 'BC', 'C', 'D', 'F']) # columns=['Section', 'Students', 'GPA', 'A', 'AB', 'B', 'BC', 'C', 'D', 'F', 'S', 'U', 'CR', 'N', 'P', 'I', 'NW', 'NR', 'Other']
+            temp.attrs["SubjectNum"] = code[:3]
+            temp.attrs["Subject"] = code[4:]
+            self.data.append(temp)
+            # print(res)
         print(f'{Fore.GREEN}[+]{Style.RESET_ALL} Packing finished!')
         
 
@@ -51,12 +67,9 @@ class Parser:
         page = self.data[index]
         self.rm_empty(page)
         self.update_headers(page)
-        if page.shape[1] < 8: 
-            # page = pd.DataFrame()
-            self.data[index] = pd.DataFrame()
-            return
+        print(page.dtypes)
         # Get only courses that meet the student threashold 
-        page[Student_col] = pd.to_numeric(page[Student_col], errors='coerce')
+        page[Student_col] = pd.to_numeric(page[Student_col], errors='coerce', downcast='integer')
         page.query(f'{Student_col}.notna()', inplace=True) 
         # page.query(f'{Student_col} > 5', inplace=True)
         # Get only courses with GPA
@@ -104,7 +117,7 @@ class Parser:
             # self.rm_empty(page)
             # self.update_headers(page)
             # self.reset_headers(page)
-            self.rm_nan_course(i)
+            # self.rm_nan_course(page)
             self.rm_empty(page)
             # self.apply_subj(page)
             self.update_headers(page)
@@ -131,11 +144,12 @@ class Parser:
             
 
 if __name__ == '__main__':
-    p = Parser('../data/pdfs/1224-grade-report.pdf', '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20')
-    # p.filter()
+    # p = Parser('../data/pdfs/1224-grade-report.pdf', '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20')
+    p = Parser('../data/pdfs/1214-grade-report.pdf', 'all')
+    p.filter()
     # # print(p.data[220], p.data[220].attrs['Subject'])
     # # print(len(p.data))
-    # # p.save(p.term)
+    p.save(p.term)
     # for page in p: 
     #     print(page.attrs['Subject'])
     #     print((page))
