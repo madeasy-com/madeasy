@@ -1,7 +1,7 @@
 import tabula, pandas as pd, csv, re, numbers
 from colorama import Fore, Style
 import aefis
-
+from tqdm import tqdm
 
 class Instructor:
     def __init__(self, filename, pages="all"):
@@ -28,7 +28,7 @@ class Instructor:
             self.collegeNum.append(page.columns[0][-4:-1])
         i = 0
         pd.options.mode.chained_assignment = None
-        for page in data:
+        for page in tqdm(data):
             page = page.iloc[:, [1, 3, -1]]
             page.columns = ["Course", "Section", "Instructor"]
             # page = page[page.LEC != "DIS"]
@@ -63,10 +63,11 @@ class Instructor:
             try:
                 return aefis.instr(collegeTerm, collegeName, courseNum, sectionNum)
             except Exception as e:
-                print(f"\nError occured with: {courseNum}, {sectionNum}, {collegeName}, {collegeNum}, {collegeTerm}")
+                print(f"\nError occured with: college: {collegeNum} {collegeName} section: {courseNum} {sectionNum} term: {collegeTerm}")
                 print(f'{Fore.LIGHTRED_EX}[-]{Style.RESET_ALL} AeFIS Error: {e}, Possible reason: Cookies file needs to be updated or No instructor found in the database')
+                return "UNKNOWN"
         except Exception as e:
-            print(f"Error occured with: {courseNum}, {sectionNum}, {collegeName}, {collegeNum}, {collegeTerm}")
+            print(f"\nError occured with: college: {collegeNum} {collegeName} section: {courseNum} {sectionNum} term: {collegeTerm}")
             raise e
 
     def get_AllInstructors(self, courseNum, collegeNum, collegeTerm):
