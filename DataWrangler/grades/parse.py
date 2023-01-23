@@ -59,25 +59,32 @@ class Parser:
         # Removes all empty columns
         page.dropna(how='all',axis=1,inplace=True)
     
-    def rm_nan_course(self, page):
+    def rm_nan_course(self, index):
         GPA_col = 'GPA'
+        CourseNum_col = 'CourseNum'
         Section_col = 'Section'
         Student_col = 'Students'
+        page = self.data[index]
         self.rm_empty(page)
         self.update_headers(page)
         print(page.dtypes)
         # Get only courses that meet the student threashold 
         page[Student_col] = pd.to_numeric(page[Student_col], errors='coerce', downcast='integer')
         page.query(f'{Student_col}.notna()', inplace=True) 
-        page.query(f'{Student_col} > 5', inplace=True)
+        # page.query(f'{Student_col} > 5', inplace=True)
         # Get only courses with GPA
         page[GPA_col] = pd.to_numeric(page[GPA_col], errors='coerce')
         page.query(f'{GPA_col}.notna()', inplace=True)
         # Get only courses with correct Section information
-        page.query(f'{Section_col}.notna()', inplace=True)
-        page[Section_col] = page[Section_col].astype(str)
-        page.query(f'{Section_col}.str.replace(" ","").str.isdigit()', inplace=True)
-        page.query(f'{Section_col}.str.len() == 7', inplace=True)
+        for col in [CourseNum_col, Section_col]:
+            # page[col] = pd.to_numeric(page[col], errors='coerce')
+            page.query(f'{col}.notna()', inplace=True)
+            # page[col] = page[col].astype(str)
+            # page.query(f'{col}.str.len() == 3', inplace=True)
+            # page.query(f'{col}.str.isdigit()', inplace=True)
+        # page[Section_col] = page[Section_col].astype(str)
+        # page.query(f'{Section_col}.str.len() == 3', inplace=True)
+        # page.query(f'{Section_col}.str.isdigit()', inplace=True)
     
     def reset_headers(self, page):
         headers = list(range(len(page.columns)))
@@ -85,8 +92,13 @@ class Parser:
         page.rename(columns=cols, inplace=True)
     
     def update_headers(self, page):
-        headers = ['Section', 'Students', 'GPA', 'A', 'AB', 'B', 'BC', 'C', 'D', 'F']
-        # headers = ['Department', 'Course', 'Section', 'Students', 'GPA', 'A', 'AB', 'B', 'BC', 'C', 'D', 'F']
+        if page.shape[1] == 10: 
+            temp = page[page.columns[0]].astype('str').str.split(' ', n=1, expand=True)
+            if temp.shape[1] == 2: 
+                page[page.columns[0]] = temp[0]
+                page.insert(1, 'Section', temp[1])
+        # if page.shape[1] != 11: return
+        headers = ['CourseNum', 'Section', 'Students', 'GPA', 'A', 'AB', 'B', 'BC', 'C', 'D', 'F']
         cols = dict(zip(page.columns, headers))
         page.rename(columns=cols, inplace=True)
     
@@ -101,9 +113,9 @@ class Parser:
         self.data = [ page for page in self.data if not page.empty ]
     
     def filter(self):
-        for page in self.data:
-            self.rm_empty(page)
-            self.update_headers(page)
+        for i, page in enumerate(self.data):
+            # self.rm_empty(page)
+            # self.update_headers(page)
             # self.reset_headers(page)
             # self.rm_nan_course(page)
             self.rm_empty(page)

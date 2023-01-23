@@ -7,8 +7,11 @@ from tqdm import tqdm
 class Extractor(Parser):
     
     def generate(self, page):
-        classList = page["Section"].tolist()
+        # print(page)
+        courseNumList = page["CourseNum"].tolist()
+        sectionList = page["Section"].tolist()
         courseDict = {}
+        student = page["Students"].tolist()
         gpa = page["GPA"].tolist()
         A = page["A"].tolist()
         AB = page["AB"].tolist()
@@ -44,12 +47,12 @@ class Extractor(Parser):
                     (0.0-mu)*(0.0-mu) * F[i] / 100,
                 ]
                 return sum(deviation)
-            course = (page.attrs["Subject"] + " " + course_num)
+            course = (page.attrs["Subject"] + " " + str(course_num))
             # print(course, section)
             courseDict[course] = courseDict.get(course, {})
             instructor = self.dir.get_instructor(
                     courseNum = int(course_num), 
-                    sectionNum = str(section), 
+                    sectionNum = str(section).zfill(3), 
                     collegeName = str(page.attrs["Subject"]),
                     collegeNum = str(page.attrs["SubjectNum"]), 
                     collegeTerm = str(self.term),
