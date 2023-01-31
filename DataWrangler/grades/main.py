@@ -28,6 +28,6 @@ def single(term):
 
 if __name__ == '__main__':
     # main()
-    # single('1232')
-    single('1222')
+    single('1232')
+    # single('1222')
     # single('1224')

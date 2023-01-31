@@ -17,7 +17,7 @@ def course_list(term, query='*'):
     json_data = {
         'selectedTerm': term,
         'queryString': query,
-        'filters': [{'has_child': {'type': 'enrollmentPackage','query': {'bool': {'must': [{'match': {'packageEnrollmentStatus.status': 'OPEN WAITLISTED',},},{'match': {'published': True,},},],},},},},],
+        'filters': [{'has_child': {'type': 'enrollmentPackage','query': {'bool': {'must': [{'match': {'packageEnrollmentStatus.status': 'OPEN WAITLISTED CLOSED',},},{'match': {'published': True,},},],},},},},],
         'page': 1,
         'pageSize': 9999,
         'sortOrder': 'SCORE',

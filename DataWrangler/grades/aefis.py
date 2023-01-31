@@ -58,9 +58,9 @@ def instructors(course, term):
         data = {}
         for section in response['DATA']:
             instructor_li = section['InstructorList']
-            names = []
-            for instructor in instructor_li:
-                names.append(instructor['Name'])
+            names = [instructor['Name'] for instructor in instructor_li]
+            # for instructor in instructor_li:
+                # names.append()
                 # instructor.pop('Id')
                 # instructor.pop('Email')
             # data[section['CourseName'][-3:]] = instructor_li
@@ -72,7 +72,7 @@ def instructors(course, term):
 def instr(term: str, college: str, course: int, section: str, depth: int = 0):
     # Retrieve instructor names
     # Known issue: semester 1204 and possible previous semesters have issues retrieving locating the correct course, and throws a section key error 
-    return str(instructors((college).strip()+' '+str(course).strip(), int(term))[str(section)]).replace('[','').replace(']','').replace("'",'')
+    return str(instructors((college).strip()+' '+str(course).strip(), int(term))[str(section)]).replace('[','').replace(']','').replace("'",'').upper()
         
 
 def batch(term):

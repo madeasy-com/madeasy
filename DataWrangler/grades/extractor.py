@@ -70,13 +70,19 @@ class Extractor(Parser):
             
         for (course, offering) in tqdm(decrossed.items()):
             # Merge all sections of a course taught by the same instructor
+            course_dist = {'A': 0, 'AB': 0, 'B': 0, 'BC': 0, 'C': 0, 'D': 0, 'F': 0, 'GPA': 0, 'Students': 0, 'Sections': 0, 'Instructors': 0}
             for instructor in offering:
                 dist = {'A': 0, 'AB': 0, 'B': 0, 'BC': 0, 'C': 0, 'D': 0, 'F': 0, 'GPA': 0, 'Students': 0, 'Sections': 0}
                 for section in offering[instructor].values():
                     for k in ['Students', 'Sections']: dist[k] += section[k]
                     for k in ['A', 'AB', 'B', 'BC', 'C', 'D', 'F', 'GPA']: dist[k] += (section[k]*section['Students'])
+                for k in ['A', 'AB', 'B', 'BC', 'C', 'D', 'F', 'GPA']: course_dist[k] += dist[k]
                 for k in ['A', 'AB', 'B', 'BC', 'C', 'D', 'F', 'GPA']: dist[k] /= dist['Students']
                 offerings[course][instructor] = dist
+                for k in ['Students', 'Sections']: course_dist[k] += dist[k]
+                course_dist['Instructors'] += 1
+            for k in ['A', 'AB', 'B', 'BC', 'C', 'D', 'F', 'GPA']: course_dist[k] /= course_dist['Students']
+            offerings[course]['distribution'] = course_dist
         # print(offerings)
         return offerings
 
