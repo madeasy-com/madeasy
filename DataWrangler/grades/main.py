@@ -1,6 +1,6 @@
 from os import listdir
 from colorama import Fore, Style
-from neoextractor import Extractor
+from extractor import Extractor
 from instructor import Instructor
 
 source = '../data/pdfs/'
@@ -29,5 +29,5 @@ def single(term):
 if __name__ == '__main__':
     # main()
     # single('1232')
-    single('1224')
-    # single('1222')
+    single('1222')
+    # single('1224')

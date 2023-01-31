@@ -62,9 +62,10 @@ class Instructor:
         except IndexError:
             try:
                 return aefis.instr(collegeTerm, collegeName, courseNum, sectionNum)
+                # return ''
             except Exception as e:
                 print(f"\nError occured with: college: {collegeNum} {collegeName} section: {courseNum} {sectionNum} term: {collegeTerm}")
-                print(f'{Fore.LIGHTRED_EX}[-]{Style.RESET_ALL} AeFIS Error: {e}, Possible reason: Cookies file needs to be updated or No instructor found in the database')
+                print(f'{Fore.LIGHTRED_EX}[-]{Style.RESET_ALL} AeFIS Error: {e}, Possible reason: Cookies file needs to be updated or no instructor found in the database')
                 return "UNKNOWN"
         except Exception as e:
             print(f"\nError occured with: college: {collegeNum} {collegeName} section: {courseNum} {sectionNum} term: {collegeTerm}")
